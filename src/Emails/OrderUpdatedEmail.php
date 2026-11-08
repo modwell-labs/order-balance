@@ -15,8 +15,8 @@ class OrderUpdatedEmail extends \WC_Email {
 	public function __construct() {
 		$this->id             = 'obal_order_updated';
 		$this->customer_email = true;
-		$this->title          = __( 'Order updated', 'order-balance' );
-		$this->description    = __( 'Sent to the customer when a paid order changes and a balance payment is requested or updated.', 'order-balance' );
+		$this->title          = __( 'Order updated', 'modwell-order-balance-for-woocommerce' );
+		$this->description    = __( 'Sent to the customer when a paid order changes and a balance payment is requested or updated.', 'modwell-order-balance-for-woocommerce' );
 		$this->template_base  = ORDER_BALANCE_DIR . 'templates/';
 		$this->template_html  = 'emails/order-updated.php';
 		$this->template_plain = 'emails/plain/order-updated.php';
@@ -31,15 +31,15 @@ class OrderUpdatedEmail extends \WC_Email {
 	}
 
 	public function get_default_subject() {
-		return __( 'Your {site_title} order #{order_number} has been updated', 'order-balance' );
+		return __( 'Your {site_title} order #{order_number} has been updated', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public function get_default_heading() {
-		return __( 'Your order has been updated', 'order-balance' );
+		return __( 'Your order has been updated', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public function get_default_additional_content() {
-		return __( 'If you have any questions, reply to this email.', 'order-balance' );
+		return __( 'If you have any questions, reply to this email.', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public function trigger( $order_id, $payment_id = 0 ): void {

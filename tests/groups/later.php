@@ -28,7 +28,6 @@ $cod  = wc_get_order( $cod->get_id() );
 $b    = $plugin->balance()->for_order( $cod );
 $check( 'record partial cash', $cash instanceof Payment && $cash->is_recorded() && 27.0 === $b->due, is_wp_error( $cash ) ? $cash->get_error_message() : $b );
 $check( 'partial cash sets partially paid', $cod->has_status( PaymentType::STATUS ), $cod->get_status() );
-$check( 'recorded payment not counted in limit', 0 === $plugin->payments()->used_count( $cod ) );
 
 $cod->update_status( 'completed' );
 $cod = wc_get_order( $cod->get_id() );

@@ -26,7 +26,7 @@ final class PaymentRepository {
 		$item->set_name(
 			'' !== $label
 				/* translators: %s: order number */
-				? $label : sprintf( __( 'Balance for order #%s', 'order-balance' ), $parent->get_order_number() )
+				? $label : sprintf( __( 'Balance for order #%s', 'modwell-order-balance-for-woocommerce' ), $parent->get_order_number() )
 		);
 		$item->set_amount( wc_format_decimal( $amount ) );
 		$item->set_total( wc_format_decimal( $amount ) );
@@ -87,20 +87,6 @@ final class PaymentRepository {
 				$this->for_order( $parent ),
 				static function ( Payment $payment ) {
 					return $payment->is_open();
-				}
-			)
-		);
-	}
-
-	/**
-	 * Payments that use up the per-order limit: paid and not refunded in full.
-	 */
-	public function used_count( \WC_Order $parent ): int {
-		return count(
-			array_filter(
-				$this->for_order( $parent ),
-				static function ( Payment $payment ) {
-					return $payment->uses_slot();
 				}
 			)
 		);

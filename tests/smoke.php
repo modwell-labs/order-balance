@@ -1,6 +1,6 @@
 <?php
 /**
- * Run: wp eval-file wp-content/plugins/order-balance/tests/smoke.php [group...]
+ * Run: wp eval-file wp-content/plugins/modwell-order-balance-for-woocommerce/tests/smoke.php [group...]
  *
  * Groups (in tests/groups/), each independent of the others:
  *   core   balance, payments, refunds, statuses, emails, rounding

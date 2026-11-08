@@ -21,13 +21,13 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 <p>
 	<?php
 	/* translators: %s: customer first name */
-	printf( esc_html__( 'Hi %s,', 'order-balance' ), esc_html( $payment ? $payment->get_billing_first_name() : $order->get_billing_first_name() ) );
+	printf( esc_html__( 'Hi %s,', 'modwell-order-balance-for-woocommerce' ), esc_html( $payment ? $payment->get_billing_first_name() : $order->get_billing_first_name() ) );
 	?>
 </p>
 <p>
 	<?php
 	/* translators: %s: order number */
-	printf( esc_html__( 'Your order #%s has been updated. The current details are below.', 'order-balance' ), esc_html( $order->get_order_number() ) );
+	printf( esc_html__( 'Your order #%s has been updated. The current details are below.', 'modwell-order-balance-for-woocommerce' ), esc_html( $order->get_order_number() ) );
 	?>
 </p>
 
@@ -35,12 +35,12 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 	<p>
 		<?php
 		/* translators: %s: amount */
-		printf( esc_html__( 'An additional payment of %s is due.', 'order-balance' ), wp_kses_post( wc_price( $payment->get_total(), $obal_currency ) ) );
+		printf( esc_html__( 'An additional payment of %s is due.', 'modwell-order-balance-for-woocommerce' ), wp_kses_post( wc_price( $payment->get_total(), $obal_currency ) ) );
 		?>
 	</p>
 	<p>
 		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="<?php echo esc_attr( \ModwellLabs\OrderBalance\Emails\Emails::button_style() ); ?>">
-			<?php esc_html_e( 'Pay now', 'order-balance' ); ?>
+			<?php esc_html_e( 'Pay now', 'modwell-order-balance-for-woocommerce' ); ?>
 		</a>
 	</p>
 <?php endif; ?>
@@ -53,11 +53,11 @@ if ( ! $obal_third_party ) {
 
 <table cellspacing="0" cellpadding="6" border="1" style="width:100%;margin-bottom:24px;border-collapse:collapse;">
 	<tr>
-		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Paid so far', 'order-balance' ); ?></th>
+		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Paid so far', 'modwell-order-balance-for-woocommerce' ); ?></th>
 		<td style="text-align:right;"><?php echo wp_kses_post( wc_price( $balance->paid, $obal_currency ) ); ?></td>
 	</tr>
 	<tr>
-		<th scope="row" style="text-align:left;"><?php echo $balance->is_overpaid() ? esc_html__( 'To be refunded', 'order-balance' ) : esc_html__( 'Balance due', 'order-balance' ); ?></th>
+		<th scope="row" style="text-align:left;"><?php echo $balance->is_overpaid() ? esc_html__( 'To be refunded', 'modwell-order-balance-for-woocommerce' ) : esc_html__( 'Balance due', 'modwell-order-balance-for-woocommerce' ); ?></th>
 		<td style="text-align:right;"><strong><?php echo wp_kses_post( wc_price( abs( $balance->due ), $obal_currency ) ); ?></strong></td>
 	</tr>
 </table>

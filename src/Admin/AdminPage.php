@@ -44,8 +44,8 @@ final class AdminPage implements Module {
 
 	public function menu(): void {
 		$hook = add_menu_page(
-			__( 'Order Balance', 'order-balance' ),
-			__( 'Order Balance', 'order-balance' ),
+			__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ),
+			__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ),
 			'edit_shop_orders',
 			self::SLUG,
 			array( $this, 'render' ),
@@ -83,10 +83,10 @@ final class AdminPage implements Module {
 		return apply_filters(
 			'obal_admin_tabs',
 			array(
-				'payments' => __( 'Payments', 'order-balance' ),
-				'settings' => __( 'Settings', 'order-balance' ),
-				'emails'   => __( 'Emails', 'order-balance' ),
-				'about'    => __( 'About', 'order-balance' ),
+				'payments' => __( 'Payments', 'modwell-order-balance-for-woocommerce' ),
+				'settings' => __( 'Settings', 'modwell-order-balance-for-woocommerce' ),
+				'emails'   => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
+				'about'    => __( 'About', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}
@@ -97,7 +97,7 @@ final class AdminPage implements Module {
 	}
 
 	public function action_links( array $links ): array {
-		array_unshift( $links, '<a href="' . esc_url( self::url( 'settings' ) ) . '">' . esc_html__( 'Settings', 'order-balance' ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( self::url( 'settings' ) ) . '">' . esc_html__( 'Settings', 'modwell-order-balance-for-woocommerce' ) . '</a>' );
 		return $links;
 	}
 
@@ -115,8 +115,8 @@ final class AdminPage implements Module {
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( Ajax::NONCE ),
-				'error'   => __( 'Something went wrong. Reload the page and try again.', 'order-balance' ),
-				'copied'  => __( 'Copied', 'order-balance' ),
+				'error'   => __( 'Something went wrong. Reload the page and try again.', 'modwell-order-balance-for-woocommerce' ),
+				'copied'  => __( 'Copied', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}
@@ -128,7 +128,7 @@ final class AdminPage implements Module {
 		delete_transient( self::NOTICE . get_current_user_id() );
 
 		echo '<div class="wrap obal-page">';
-		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Order Balance', 'order-balance' ) . '</h1>';
+		echo '<h1 class="wp-heading-inline">' . esc_html__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ) . '</h1>';
 
 		if ( is_array( $notice ) ) {
 			printf( '<div class="notice notice-%s is-dismissible"><p>%s</p></div>', esc_attr( $notice[1] ), esc_html( $notice[0] ) );
@@ -163,7 +163,7 @@ final class AdminPage implements Module {
 		echo '<form method="get">';
 		printf( '<input type="hidden" name="page" value="%s"><input type="hidden" name="tab" value="payments">', esc_attr( self::SLUG ) );
 		$table->views();
-		$table->search_box( __( 'Search payments', 'order-balance' ), 'obal-payments' );
+		$table->search_box( __( 'Search payments', 'modwell-order-balance-for-woocommerce' ), 'obal-payments' );
 		$table->display();
 		echo '</form>';
 	}
@@ -192,9 +192,9 @@ final class AdminPage implements Module {
 
 		printf(
 			'<p class="obal-setup-link">%1$s <a href="%2$s">%3$s</a></p>',
-			esc_html__( 'New to Order Balance?', 'order-balance' ),
+			esc_html__( 'New to Order Balance?', 'modwell-order-balance-for-woocommerce' ),
 			esc_url( SetupWizard::url() ),
-			esc_html__( 'Run the setup wizard', 'order-balance' )
+			esc_html__( 'Run the setup wizard', 'modwell-order-balance-for-woocommerce' )
 		);
 
 		echo '<form method="post">';
@@ -202,7 +202,7 @@ final class AdminPage implements Module {
 		wp_nonce_field( self::NONCE );
 		echo '<input type="hidden" name="obal_save" value="settings">';
 		printf( '<input type="hidden" name="obal_category" value="%s">', esc_attr( $current ) );
-		submit_button( __( 'Save changes', 'order-balance' ) );
+		submit_button( __( 'Save changes', 'modwell-order-balance-for-woocommerce' ) );
 		echo '</form>';
 	}
 
@@ -223,7 +223,7 @@ final class AdminPage implements Module {
 		}
 		check_admin_referer( self::NONCE );
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'You are not allowed to do this.', 'order-balance' ), 403 );
+			wp_die( esc_html__( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ), 403 );
 		}
 
 		$section = sanitize_key( wp_unslash( $_POST['obal_save'] ) );
@@ -240,7 +240,7 @@ final class AdminPage implements Module {
 			do_action( 'obal_admin_save_' . $section, $this->plugin );
 		}
 
-		self::notice( __( 'Settings saved.', 'order-balance' ) );
+		self::notice( __( 'Settings saved.', 'modwell-order-balance-for-woocommerce' ) );
 		wp_safe_redirect( self::url( $this->current_tab(), $args ) );
 		exit;
 	}
@@ -278,11 +278,11 @@ final class AdminPage implements Module {
 		return apply_filters(
 			'obal_about_info',
 			array(
-				__( 'Order Balance', 'order-balance' ) => ORDER_BALANCE_VERSION,
-				__( 'WordPress', 'order-balance' )     => get_bloginfo( 'version' ),
-				__( 'WooCommerce', 'order-balance' )   => defined( 'WC_VERSION' ) ? WC_VERSION : '',
-				__( 'PHP', 'order-balance' )           => PHP_VERSION,
-				__( 'Order storage', 'order-balance' ) => $hpos ? ( $sync ? __( 'HPOS with compatibility sync', 'order-balance' ) : __( 'HPOS', 'order-balance' ) ) : __( 'Legacy (posts)', 'order-balance' ),
+				__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ) => ORDER_BALANCE_VERSION,
+				__( 'WordPress', 'modwell-order-balance-for-woocommerce' )     => get_bloginfo( 'version' ),
+				__( 'WooCommerce', 'modwell-order-balance-for-woocommerce' )   => defined( 'WC_VERSION' ) ? WC_VERSION : '',
+				__( 'PHP', 'modwell-order-balance-for-woocommerce' )           => PHP_VERSION,
+				__( 'Order storage', 'modwell-order-balance-for-woocommerce' ) => $hpos ? ( $sync ? __( 'HPOS with compatibility sync', 'modwell-order-balance-for-woocommerce' ) : __( 'HPOS', 'modwell-order-balance-for-woocommerce' ) ) : __( 'Legacy (posts)', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}

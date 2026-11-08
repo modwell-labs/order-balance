@@ -1,4 +1,4 @@
-# Order Balance
+# Modwell Order Balance for WooCommerce
 
 Collect the difference when a paid WooCommerce order changes, refund overpayments, and absorb small rounding differences.
 
@@ -23,8 +23,8 @@ See [readme.txt](readme.txt) for the full description and FAQ.
 Tests run with WP-CLI from the WordPress root of a test site:
 
 ```
-wp eval-file wp-content/plugins/order-balance/tests/smoke.php [group...]
-wp eval-file wp-content/plugins/order-balance/tests/uninstall.php
+wp eval-file wp-content/plugins/modwell-order-balance-for-woocommerce/tests/smoke.php [group...]
+wp eval-file wp-content/plugins/modwell-order-balance-for-woocommerce/tests/uninstall.php
 ```
 
 `smoke.php` runs the groups in `tests/groups/`, each independent of the others: `core` (balance, payments, refunds, statuses, emails, rounding), `admin` (payment screen, settings, setup wizard), `later` (pay-later payment methods), `fees` (payment method fees, order change fee, tax) `changes` (the order changes again while a payment is waiting) and `compat` (payment plugins and other plugins finding balance payments; checks for a plugin run only when it is active). With no argument it runs all of them. `uninstall.php` deletes the plugin's data and is destructive on the test site.

@@ -50,16 +50,16 @@ $amount  = static function ( $payment ): float {
 	return (float) wc_get_order( $payment->get_id() )->get_total();
 };
 
-// Free version: one balance payment per order.
+// Free version: one payment open at a time (Pro opens several at once).
 $free = static function () {
-	return 1;
+	return false;
 };
-add_filter( 'obal_max_extra_payments', $free, 99 );
+add_filter( 'obal_request_while_open', $free, 99 );
 
 // 1. The waiting payment grows with the order.
 $o = $add( $new_paid_order(), 'Mug' );
 $p = $service->request( $o, null, false );
-$check( 'free: counter 0 / 1 while the payment waits', false !== strpos( $box( $o ), 'Balance payments: 0 / 1' ) );
+$check( 'free: no payment counter in the box', false === strpos( $box( $o ), 'Balance payments:' ) );
 $o = $add( $o, 'Poster' );
 $check( 'change since the request is +18', 18.0 === $service->waiting_change( $o ), $service->waiting_change( $o ) );
 $check( 'free: no second payment while one waits', ! $service->can_request( $o ) );
@@ -85,26 +85,22 @@ $check( 'cancel: payment cancelled', wc_get_order( $p->get_id() )->has_status( '
 $check( 'cancel: order settled, no longer partially paid', $plugin->balance()->for_order( $o )->is_settled() && ! $o->has_status( PaymentType::STATUS ), $o->get_status() );
 $check( 'cancel: a payment can be requested again', $service->can_request( $o ) );
 
-// 4. A paid payment uses the free place; refunding it in full frees it.
+// 4. No limit: once a payment is paid, the next change is requested as a new payment.
 $o = $add( $new_paid_order(), 'Mug' );
 $p = $service->request( $o, null, false );
 wc_get_order( $p->get_id() )->payment_complete();
 $o = $add( $o, 'Poster' );
-$check( 'paid: 1 / 1, limit reached', 1 === $service->used_payments( $o ) && $service->limit_reached( $o ) && ! $service->can_request( $o ) );
+$check( 'paid: a new payment can be requested', $service->can_request( $o ) );
 $html = $box( $o );
-$check( 'box: limit notice with a Pro link', false !== strpos( $html, 'Payment limit reached' ) && false !== strpos( $html, 'Balance payments: 1 / 1' ) && false !== strpos( $html, 'Get Order Balance Pro' ) && false === strpos( $html, 'data-action="request_payment"' ) );
-$refused = $service->request( $o, null, false );
-$check( 'limit: request refused', is_wp_error( $refused ) && 'obal_limit' === $refused->get_error_code() );
-wc_create_refund(
-	array(
-		'order_id' => $p->get_id(),
-		'amount'   => wc_get_order( $p->get_id() )->get_total(),
-	)
-);
-$o = $fresh( $o );
-$check( 'refunded in full: the place is free again', wc_get_order( $p->get_id() )->has_status( 'refunded' ) && 0 === $service->used_payments( $o ) && $service->can_request( $o ), wc_get_order( $p->get_id() )->get_status() );
+$check( 'box: request button, no limit notice', false !== strpos( $html, 'data-action="request_payment"' ) && false === strpos( $html, 'limit' ) );
+$second = $service->request( $o, null, false );
+$check( 'second payment for the new change', $second instanceof \ModwellLabs\OrderBalance\Payments\Payment && 18.0 === (float) $second->get_total() && 2 === count( $plugin->payments()->for_order( $fresh( $o ) ) ), is_wp_error( $second ) ? $second->get_error_message() : '' );
+wc_get_order( $second->get_id() )->payment_complete();
+$o = $add( $o, 'Mug' );
+$third = $service->request( $o, null, false );
+$check( 'and a third', $third instanceof \ModwellLabs\OrderBalance\Payments\Payment, is_wp_error( $third ) ? $third->get_error_message() : '' );
 
-remove_filter( 'obal_max_extra_payments', $free, 99 );
+remove_filter( 'obal_request_while_open', $free, 99 );
 
 // 5. Pro, automatic: the waiting payment follows the order; one email after the delay.
 update_option( 'obal_waiting_mode', 'auto' );

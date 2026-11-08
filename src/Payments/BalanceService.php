@@ -29,31 +29,16 @@ final class BalanceService {
 		$this->plugin = $plugin;
 	}
 
-	public function max_payments( \WC_Order $order ): int {
-		return max( 0, (int) apply_filters( 'obal_max_extra_payments', 1, $order ) );
-	}
-
-	public function is_limited( \WC_Order $order ): bool {
-		return $this->max_payments( $order ) > 0;
-	}
-
-	public function used_payments( \WC_Order $order ): int {
-		return $this->plugin->payments()->used_count( $order );
-	}
-
-	public function limit_reached( \WC_Order $order ): bool {
-		return $this->is_limited( $order ) && $this->used_payments( $order ) >= $this->max_payments( $order );
-	}
-
 	/**
-	 * A new payment can be requested. With a limit (the free version) there is one payment
-	 * at a time: while one is waiting, changes go into it with update_waiting() instead.
+	 * A new payment can be requested when none is open. While one is waiting, changes to
+	 * the order go into it with update_waiting(), so the customer keeps one pay link.
+	 * Extensions that split the balance into several payments open at once can allow it.
 	 */
 	public function can_request( \WC_Order $order ): bool {
-		if ( ! $this->is_limited( $order ) ) {
+		if ( ! $this->plugin->payments()->open( $order ) ) {
 			return true;
 		}
-		return ! $this->limit_reached( $order ) && ! $this->plugin->payments()->open( $order );
+		return (bool) apply_filters( 'obal_request_while_open', false, $order );
 	}
 
 	public function waiting_mode( \WC_Order $order ): string {
@@ -121,7 +106,7 @@ final class BalanceService {
 	public function update_waiting( \WC_Order $order, bool $notify = true ) {
 		$plan = $this->waiting_plan( $order );
 		if ( ! $plan ) {
-			return new \WP_Error( 'obal_nothing_to_update', __( 'There is no change to apply to a waiting payment.', 'order-balance' ) );
+			return new \WP_Error( 'obal_nothing_to_update', __( 'There is no change to apply to a waiting payment.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$order->update_meta_data( self::REQUEST_TOTAL_META, wc_format_decimal( $order->get_total() ) );
@@ -141,18 +126,18 @@ final class BalanceService {
 				$order->add_order_note(
 					sprintf(
 						/* translators: 1: payment number, 2: old amount, 3: new amount */
-						__( 'Balance payment #%1$s updated: %2$s to %3$s.', 'order-balance' ),
+						__( 'Balance payment #%1$s updated: %2$s to %3$s.', 'modwell-order-balance-for-woocommerce' ),
 						$payment->get_order_number(),
 						wp_strip_all_tags( wc_price( $step['from'], $currency ) ),
 						wp_strip_all_tags( wc_price( $step['to'], $currency ) )
 					)
 				);
 			} else {
-				$payment->update_status( 'cancelled', __( 'Cancelled: the order no longer needs this payment.', 'order-balance' ) );
+				$payment->update_status( 'cancelled', __( 'Cancelled: the order no longer needs this payment.', 'modwell-order-balance-for-woocommerce' ) );
 				$result['cancelled'][] = $payment;
 				$order->add_order_note(
 					/* translators: %s: payment number */
-					sprintf( __( 'Balance payment #%s cancelled: the order no longer needs it.', 'order-balance' ), $payment->get_order_number() )
+					sprintf( __( 'Balance payment #%s cancelled: the order no longer needs it.', 'modwell-order-balance-for-woocommerce' ), $payment->get_order_number() )
 				);
 			}
 		}
@@ -206,7 +191,7 @@ final class BalanceService {
 		$payment->add_order_note(
 			sprintf(
 				/* translators: 1: old amount, 2: new amount */
-				__( 'Amount changed from %1$s to %2$s because the order changed.', 'order-balance' ),
+				__( 'Amount changed from %1$s to %2$s because the order changed.', 'modwell-order-balance-for-woocommerce' ),
 				wp_strip_all_tags( wc_price( $old, array( 'currency' => $payment->get_currency() ) ) ),
 				wp_strip_all_tags( wc_price( $amount, array( 'currency' => $payment->get_currency() ) ) )
 			)
@@ -222,22 +207,20 @@ final class BalanceService {
 		$balance = $this->plugin->balance()->for_order( $order );
 
 		if ( ! $balance->tracked ) {
-			return new \WP_Error( 'obal_not_paid', __( 'The order has not been paid yet.', 'order-balance' ) );
+			return new \WP_Error( 'obal_not_paid', __( 'The order has not been paid yet.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 		if ( ! $this->can_request( $order ) ) {
-			return $this->limit_reached( $order )
-				? new \WP_Error( 'obal_limit', __( 'The extra payment limit for this order has been reached.', 'order-balance' ) )
-				: new \WP_Error( 'obal_waiting', __( 'A balance payment is already waiting. Update it instead of requesting another one.', 'order-balance' ) );
+			return new \WP_Error( 'obal_waiting', __( 'A balance payment is already waiting. Update it instead of requesting another one.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$available = $balance->unrequested();
 		$amount    = null === $amount ? $available : round( $amount, wc_get_price_decimals() );
 
 		if ( $available <= 0 || $amount <= 0 ) {
-			return new \WP_Error( 'obal_nothing_due', __( 'There is no unrequested balance on this order.', 'order-balance' ) );
+			return new \WP_Error( 'obal_nothing_due', __( 'There is no unrequested balance on this order.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 		if ( $amount > $available ) {
-			return new \WP_Error( 'obal_too_much', __( 'The amount is higher than the unrequested balance.', 'order-balance' ) );
+			return new \WP_Error( 'obal_too_much', __( 'The amount is higher than the unrequested balance.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$this->plugin->settings()->lock_mode( $order );
@@ -247,7 +230,7 @@ final class BalanceService {
 		$order->add_order_note(
 			sprintf(
 				/* translators: 1: amount, 2: payment number */
-				__( 'Balance payment of %1$s requested (#%2$s).', 'order-balance' ),
+				__( 'Balance payment of %1$s requested (#%2$s).', 'modwell-order-balance-for-woocommerce' ),
 				wp_strip_all_tags( wc_price( $amount, array( 'currency' => $order->get_currency() ) ) ),
 				$payment->get_order_number()
 			)
@@ -272,21 +255,21 @@ final class BalanceService {
 		$balance = $this->plugin->balance()->for_order( $order );
 
 		if ( ! $balance->tracked ) {
-			return new \WP_Error( 'obal_not_tracked', __( 'Payments cannot be recorded for this order.', 'order-balance' ) );
+			return new \WP_Error( 'obal_not_tracked', __( 'Payments cannot be recorded for this order.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 		if ( $amount <= 0 || $amount > $balance->due ) {
-			return new \WP_Error( 'obal_record_amount', __( 'Enter an amount between 0 and the balance due.', 'order-balance' ) );
+			return new \WP_Error( 'obal_record_amount', __( 'Enter an amount between 0 and the balance due.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$this->plugin->settings()->lock_mode( $order );
 
-		$title = '' !== $method_title ? $method_title : ( $order->get_payment_method_title() ? $order->get_payment_method_title() : __( 'Manual payment', 'order-balance' ) );
+		$title = '' !== $method_title ? $method_title : ( $order->get_payment_method_title() ? $order->get_payment_method_title() : __( 'Manual payment', 'modwell-order-balance-for-woocommerce' ) );
 
 		$payment = $this->plugin->payments()->create(
 			$order,
 			$amount,
 			/* translators: %s: order number */
-			sprintf( __( 'Payment for order #%s', 'order-balance' ), $order->get_order_number() )
+			sprintf( __( 'Payment for order #%s', 'modwell-order-balance-for-woocommerce' ), $order->get_order_number() )
 		);
 		$payment->update_meta_data( '_obal_recorded', 1 );
 		$payment->set_payment_method( $order->get_payment_method() );
@@ -298,7 +281,7 @@ final class BalanceService {
 
 		$payment->update_status(
 			'completed',
-			'' !== $note ? $note : __( 'Payment recorded by the store.', 'order-balance' )
+			'' !== $note ? $note : __( 'Payment recorded by the store.', 'modwell-order-balance-for-woocommerce' )
 		);
 
 		$order = wc_get_order( $order->get_id() );
@@ -364,13 +347,13 @@ final class BalanceService {
 	public function refund( \WC_Order $order ) {
 		$balance = $this->plugin->balance()->for_order( $order );
 		if ( ! $balance->is_overpaid() ) {
-			return new \WP_Error( 'obal_not_overpaid', __( 'The order is not overpaid.', 'order-balance' ) );
+			return new \WP_Error( 'obal_not_overpaid', __( 'The order is not overpaid.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$amount    = abs( $balance->due );
 		$available = (float) $order->get_total() - (float) $order->get_total_refunded();
 		if ( $amount > $available ) {
-			return new \WP_Error( 'obal_refund_limit', __( 'The refund is larger than the remaining order total. Refund it manually in your payment provider.', 'order-balance' ) );
+			return new \WP_Error( 'obal_refund_limit', __( 'The refund is larger than the remaining order total. Refund it manually in your payment provider.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$gateway   = wc_get_payment_gateway_by_order( $order );
@@ -380,7 +363,7 @@ final class BalanceService {
 			array(
 				'order_id'       => $order->get_id(),
 				'amount'         => wc_format_decimal( $amount ),
-				'reason'         => __( 'Order balance refund', 'order-balance' ),
+				'reason'         => __( 'Order balance refund', 'modwell-order-balance-for-woocommerce' ),
 				'refund_payment' => (bool) apply_filters( 'obal_refund_via_gateway', $automatic, $order ),
 				'restock_items'  => false,
 			)
@@ -394,7 +377,7 @@ final class BalanceService {
 		$refund->save();
 
 		if ( ! $automatic ) {
-			$order->add_order_note( __( 'The payment method does not support automatic refunds. Send the money back manually.', 'order-balance' ) );
+			$order->add_order_note( __( 'The payment method does not support automatic refunds. Send the money back manually.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		do_action( 'obal_balance_refunded', $refund, $order );
@@ -413,7 +396,7 @@ final class BalanceService {
 			return true;
 		}
 		if ( ! $force && ! $balance->within( $threshold ) ) {
-			return new \WP_Error( 'obal_above_threshold', __( 'The difference is above the rounding threshold.', 'order-balance' ) );
+			return new \WP_Error( 'obal_above_threshold', __( 'The difference is above the rounding threshold.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$delta = -$balance->due;
@@ -442,7 +425,7 @@ final class BalanceService {
 		$order->add_order_note(
 			sprintf(
 				/* translators: %s: amount */
-				__( 'Rounding adjustment of %s applied.', 'order-balance' ),
+				__( 'Rounding adjustment of %s applied.', 'modwell-order-balance-for-woocommerce' ),
 				wp_strip_all_tags( wc_price( $delta, array( 'currency' => $order->get_currency() ) ) )
 			)
 		);
@@ -457,7 +440,7 @@ final class BalanceService {
 			return;
 		}
 		$order->update_meta_data( self::PREVIOUS_STATUS, $order->get_status() );
-		$order->set_status( PaymentType::STATUS, __( 'Waiting for the balance payment.', 'order-balance' ) );
+		$order->set_status( PaymentType::STATUS, __( 'Waiting for the balance payment.', 'modwell-order-balance-for-woocommerce' ) );
 		$order->save();
 	}
 
@@ -467,7 +450,7 @@ final class BalanceService {
 		}
 		$previous = (string) $order->get_meta( self::PREVIOUS_STATUS );
 		$order->delete_meta_data( self::PREVIOUS_STATUS );
-		$order->set_status( $this->settled_status( $order, $previous ), __( 'Balance settled.', 'order-balance' ) );
+		$order->set_status( $this->settled_status( $order, $previous ), __( 'Balance settled.', 'modwell-order-balance-for-woocommerce' ) );
 		$order->save();
 	}
 
@@ -476,7 +459,7 @@ final class BalanceService {
 		if ( 'previous' === $target || $order->has_status( $target ) ) {
 			return;
 		}
-		$order->set_status( $this->settled_status( $order, $order->get_status() ), __( 'Balance paid.', 'order-balance' ) );
+		$order->set_status( $this->settled_status( $order, $order->get_status() ), __( 'Balance paid.', 'modwell-order-balance-for-woocommerce' ) );
 		$order->save();
 	}
 

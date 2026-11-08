@@ -37,7 +37,7 @@ final class StatusSync implements Module {
 		}
 		if ( PaymentRepository::is_parent( $order ) && 'cancelled' === $to ) {
 			foreach ( $this->plugin->payments()->open( $order ) as $payment ) {
-				$payment->update_status( 'cancelled', __( 'Parent order cancelled.', 'order-balance' ) );
+				$payment->update_status( 'cancelled', __( 'Parent order cancelled.', 'modwell-order-balance-for-woocommerce' ) );
 			}
 		}
 	}
@@ -75,14 +75,14 @@ final class StatusSync implements Module {
 			$currency = array( 'currency' => $payment->get_currency() );
 			$note     = sprintf(
 				/* translators: 1: payment number, 2: amount */
-				__( 'Balance payment #%1$s received: %2$s.', 'order-balance' ),
+				__( 'Balance payment #%1$s received: %2$s.', 'modwell-order-balance-for-woocommerce' ),
 				$payment->get_order_number(),
 				wp_strip_all_tags( wc_price( $payment->get_total(), $currency ) )
 			);
 			if ( $payment->get_fees_part() > 0 ) {
 				$note .= ' ' . sprintf(
 					/* translators: 1: amount credited to the order, 2: fees */
-					__( '%1$s counts toward the balance, %2$s is fees.', 'order-balance' ),
+					__( '%1$s counts toward the balance, %2$s is fees.', 'modwell-order-balance-for-woocommerce' ),
 					wp_strip_all_tags( wc_price( $payment->get_balance_part(), $currency ) ),
 					wp_strip_all_tags( wc_price( $payment->get_fees_part(), $currency ) )
 				);

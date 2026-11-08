@@ -1,4 +1,4 @@
-=== Order Balance ===
+=== Modwell Order Balance for WooCommerce ===
 Contributors: modwelllabs
 Tags: woocommerce, order edit, additional payment, balance due, refund difference
 Requires at least: 6.4
@@ -31,7 +31,9 @@ When you edit an order that has already been paid, WooCommerce asks the customer
 * Each balance payment has a screen laid out like a WooCommerce order: details, lines, totals, refunds, actions and notes.
 * Works with High-Performance Order Storage (HPOS) and legacy order storage.
 
-The free version takes one balance payment per order. A payment uses the place once it is paid, and refunding it in full frees the place again. While the payment is waiting, further changes to the order update it with one click, so the customer keeps one link and pays once. Order Balance Pro adds unlimited and custom-amount payments, refunds of single payments, changing who pays, combined invoices, payment reminders and an optional order change fee.
+There is no limit on balance payments. While a payment is waiting, further changes to the order update it with one click, so the customer keeps one link and pays once. Once it is paid, a later change can be requested as a new payment.
+
+Order Balance Pro, a separate add-on for stores that change orders often, is in development. Planned features: automatic updates of waiting payments with one email a few minutes after the last change, custom amounts and payments in parts, refunds of single payments, combined invoices, payment reminders and an optional order change fee. To hear when it is ready, leave your email at [modwelllabs.com/order-balance](https://modwelllabs.com/order-balance/).
 
 == Frequently Asked Questions ==
 
@@ -49,7 +51,7 @@ If a payment method adds a fee or surcharge to a balance payment, only the reque
 
 = Can I charge a fee for changing an order? =
 
-Order Balance Pro can add an order change fee to balance payments: a fixed amount or a percentage, off by default. It is a separate line on the payment and does not count toward the order. It applies only to orders paid at checkout that were changed afterwards. Orders paid later (cash on delivery, bank transfer, orders created in the admin) and payments you record manually never get a fee. You choose whether the fee is taxed and when it is refunded: with a full refund (default), in proportion, or never.
+Not in the free version. An order change fee is planned for Order Balance Pro, which is in development: a fixed amount or a percentage on balance payments, off by default, for orders paid at checkout only, with a choice of tax and refund rules.
 
 Check the rules before you charge a fee. In some countries a fee for paying later counts as consumer credit and needs a licence, so describe it as a charge for changing the order. Fees on sales of taxable goods are usually taxable. Consumers who cancel a distance sale may be entitled to a refund of all payments, fees included. Ask your accountant or legal adviser.
 
@@ -59,7 +61,7 @@ Tax is calculated on the order itself. A balance payment pays part of that total
 
 = What if the order changes again before the customer pays? =
 
-The Balance box shows how the waiting payment would change, for example from 12.00 to 30.00, and updates it with one click. The customer keeps the same pay link. If the order no longer needs the payment, it is cancelled instead. Order Balance Pro can do this automatically when the order is recalculated, sending one email a few minutes after the last change, or request the difference as a separate payment.
+The Balance box shows how the waiting payment would change, for example from 12.00 to 30.00, and updates it with one click. The customer keeps the same pay link. If the order no longer needs the payment, it is cancelled instead. Doing this automatically when the order is recalculated, with one email a few minutes after the last change, is planned for Order Balance Pro.
 
 = What happens to my data when I delete the plugin? =
 

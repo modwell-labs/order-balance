@@ -111,12 +111,12 @@ final class PayGuard implements Module {
 			return $response;
 		}
 
-		$order->add_order_note( __( 'Payment stopped: the amount changed while the customer was on the pay page.', 'order-balance' ) );
+		$order->add_order_note( __( 'Payment stopped: the amount changed while the customer was on the pay page.', 'modwell-order-balance-for-woocommerce' ) );
 		return new \WP_Error(
 			'obal_amount_changed',
 			sprintf(
 				/* translators: %s: new amount */
-				__( 'The amount of this payment has just changed to %s. Please reload the page and pay again.', 'order-balance' ),
+				__( 'The amount of this payment has just changed to %s. Please reload the page and pay again.', 'modwell-order-balance-for-woocommerce' ),
 				wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) )
 			),
 			array( 'status' => 409 )
@@ -145,12 +145,12 @@ final class PayGuard implements Module {
 		wc_add_notice(
 			sprintf(
 				/* translators: %s: new amount */
-				__( 'The amount of this payment has just changed to %s. Please check it and pay again.', 'order-balance' ),
+				__( 'The amount of this payment has just changed to %s. Please check it and pay again.', 'modwell-order-balance-for-woocommerce' ),
 				wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) )
 			),
 			'error'
 		);
-		$order->add_order_note( __( 'Payment stopped: the amount changed while the customer was on the pay page. The page was reloaded with the new amount.', 'order-balance' ) );
+		$order->add_order_note( __( 'Payment stopped: the amount changed while the customer was on the pay page. The page was reloaded with the new amount.', 'modwell-order-balance-for-woocommerce' ) );
 
 		wp_safe_redirect( $order->get_checkout_payment_url() );
 		exit;

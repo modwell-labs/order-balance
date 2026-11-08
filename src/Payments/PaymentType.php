@@ -32,12 +32,12 @@ final class PaymentType implements Module {
 			Payment::TYPE,
 			array(
 				'labels'                           => array(
-					'name'          => __( 'Balance payments', 'order-balance' ),
-					'singular_name' => __( 'Balance payment', 'order-balance' ),
-					'edit_item'     => __( 'Edit balance payment', 'order-balance' ),
-					'search_items'  => __( 'Search balance payments', 'order-balance' ),
-					'parent'        => __( 'Order', 'order-balance' ),
-					'menu_name'     => __( 'Balance payments', 'order-balance' ),
+					'name'          => __( 'Balance payments', 'modwell-order-balance-for-woocommerce' ),
+					'singular_name' => __( 'Balance payment', 'modwell-order-balance-for-woocommerce' ),
+					'edit_item'     => __( 'Edit balance payment', 'modwell-order-balance-for-woocommerce' ),
+					'search_items'  => __( 'Search balance payments', 'modwell-order-balance-for-woocommerce' ),
+					'parent'        => __( 'Order', 'modwell-order-balance-for-woocommerce' ),
+					'menu_name'     => __( 'Balance payments', 'modwell-order-balance-for-woocommerce' ),
 				),
 				'public'                           => false,
 				'show_ui'                          => true,
@@ -69,13 +69,13 @@ final class PaymentType implements Module {
 		register_post_status(
 			'wc-' . self::STATUS,
 			array(
-				'label'                     => _x( 'Partially paid', 'Order status', 'order-balance' ),
+				'label'                     => _x( 'Partially paid', 'Order status', 'modwell-order-balance-for-woocommerce' ),
 				'public'                    => false,
 				'exclude_from_search'       => false,
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				/* translators: %s: number of orders */
-				'label_count'               => _n_noop( 'Partially paid <span class="count">(%s)</span>', 'Partially paid <span class="count">(%s)</span>', 'order-balance' ),
+				'label_count'               => _n_noop( 'Partially paid <span class="count">(%s)</span>', 'Partially paid <span class="count">(%s)</span>', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}
@@ -85,11 +85,11 @@ final class PaymentType implements Module {
 		foreach ( $statuses as $key => $label ) {
 			$result[ $key ] = $label;
 			if ( 'wc-on-hold' === $key ) {
-				$result[ 'wc-' . self::STATUS ] = _x( 'Partially paid', 'Order status', 'order-balance' );
+				$result[ 'wc-' . self::STATUS ] = _x( 'Partially paid', 'Order status', 'modwell-order-balance-for-woocommerce' );
 			}
 		}
 		if ( ! isset( $result[ 'wc-' . self::STATUS ] ) ) {
-			$result[ 'wc-' . self::STATUS ] = _x( 'Partially paid', 'Order status', 'order-balance' );
+			$result[ 'wc-' . self::STATUS ] = _x( 'Partially paid', 'Order status', 'modwell-order-balance-for-woocommerce' );
 		}
 		return $result;
 	}

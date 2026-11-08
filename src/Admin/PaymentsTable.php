@@ -35,13 +35,13 @@ final class PaymentsTable extends \WP_List_Table {
 			'obal_payments_columns',
 			array(
 				'cb'       => '<input type="checkbox">',
-				'payment'  => __( 'Payment', 'order-balance' ),
-				'order'    => __( 'Order', 'order-balance' ),
-				'customer' => __( 'Payer', 'order-balance' ),
-				'status'   => __( 'Status', 'order-balance' ),
-				'method'   => __( 'Method', 'order-balance' ),
-				'date'     => __( 'Date', 'order-balance' ),
-				'amount'   => __( 'Amount', 'order-balance' ),
+				'payment'  => __( 'Payment', 'modwell-order-balance-for-woocommerce' ),
+				'order'    => __( 'Order', 'modwell-order-balance-for-woocommerce' ),
+				'customer' => __( 'Payer', 'modwell-order-balance-for-woocommerce' ),
+				'status'   => __( 'Status', 'modwell-order-balance-for-woocommerce' ),
+				'method'   => __( 'Method', 'modwell-order-balance-for-woocommerce' ),
+				'date'     => __( 'Date', 'modwell-order-balance-for-woocommerce' ),
+				'amount'   => __( 'Amount', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}
@@ -59,13 +59,13 @@ final class PaymentsTable extends \WP_List_Table {
 	}
 
 	protected function get_bulk_actions() {
-		return apply_filters( 'obal_payments_bulk_actions', array( 'cancel' => __( 'Cancel', 'order-balance' ) ) );
+		return apply_filters( 'obal_payments_bulk_actions', array( 'cancel' => __( 'Cancel', 'modwell-order-balance-for-woocommerce' ) ) );
 	}
 
 	protected function get_views() {
 		$current = $this->status_filter();
 		$views   = array();
-		$all     = array_merge( array( '' => __( 'All', 'order-balance' ) ), $this->statuses() );
+		$all     = array_merge( array( '' => __( 'All', 'modwell-order-balance-for-woocommerce' ) ), $this->statuses() );
 
 		foreach ( $all as $status => $label ) {
 			$count = $this->count( $status );
@@ -110,7 +110,7 @@ final class PaymentsTable extends \WP_List_Table {
 	}
 
 	public function no_items() {
-		esc_html_e( 'No balance payments yet. Request one from a paid order that has changed.', 'order-balance' );
+		esc_html_e( 'No balance payments yet. Request one from a paid order that has changed.', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	protected function column_cb( $item ) {
@@ -128,7 +128,7 @@ final class PaymentsTable extends \WP_List_Table {
 
 	protected function column_customer( Payment $item ) {
 		$name = trim( $item->get_formatted_billing_full_name() );
-		return esc_html( $name ? $name : __( 'Guest', 'order-balance' ) ) . '<br><span class="description">' . esc_html( $item->get_billing_email() ) . '</span>';
+		return esc_html( $name ? $name : __( 'Guest', 'modwell-order-balance-for-woocommerce' ) ) . '<br><span class="description">' . esc_html( $item->get_billing_email() ) . '</span>';
 	}
 
 	protected function column_status( Payment $item ) {
@@ -149,7 +149,7 @@ final class PaymentsTable extends \WP_List_Table {
 		if ( $item->get_total_refunded() > 0 ) {
 			$html .= '<br><span class="description">' . sprintf(
 				/* translators: %s: refunded amount */
-				esc_html__( 'Refunded %s', 'order-balance' ),
+				esc_html__( 'Refunded %s', 'modwell-order-balance-for-woocommerce' ),
 				wp_kses_post( wc_price( $item->get_total_refunded(), array( 'currency' => $item->get_currency() ) ) )
 			) . '</span>';
 		}
@@ -164,12 +164,12 @@ final class PaymentsTable extends \WP_List_Table {
 
 	private function statuses(): array {
 		return array(
-			'pending'   => __( 'Pending payment', 'order-balance' ),
-			'on-hold'   => __( 'On hold', 'order-balance' ),
-			'completed' => __( 'Paid', 'order-balance' ),
-			'cancelled' => __( 'Cancelled', 'order-balance' ),
-			'refunded'  => __( 'Refunded', 'order-balance' ),
-			'failed'    => __( 'Failed', 'order-balance' ),
+			'pending'   => __( 'Pending payment', 'modwell-order-balance-for-woocommerce' ),
+			'on-hold'   => __( 'On hold', 'modwell-order-balance-for-woocommerce' ),
+			'completed' => __( 'Paid', 'modwell-order-balance-for-woocommerce' ),
+			'cancelled' => __( 'Cancelled', 'modwell-order-balance-for-woocommerce' ),
+			'refunded'  => __( 'Refunded', 'modwell-order-balance-for-woocommerce' ),
+			'failed'    => __( 'Failed', 'modwell-order-balance-for-woocommerce' ),
 		);
 	}
 
@@ -231,7 +231,7 @@ final class PaymentsTable extends \WP_List_Table {
 		}
 
 		/* translators: %d: number of payments */
-		AdminPage::notice( sprintf( _n( '%d payment updated.', '%d payments updated.', $done, 'order-balance' ), $done ) );
+		AdminPage::notice( sprintf( _n( '%d payment updated.', '%d payments updated.', $done, 'modwell-order-balance-for-woocommerce' ), $done ) );
 		wp_safe_redirect( AdminPage::url( 'payments' ) );
 		exit;
 	}

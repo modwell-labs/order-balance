@@ -22,7 +22,7 @@ $obal_keys    = array_keys( $steps );
 $obal_current = (int) array_search( $step, $obal_keys, true );
 ?>
 <div class="wrap obal-setup">
-	<h1 class="obal-setup__title"><?php esc_html_e( 'Order Balance', 'order-balance' ); ?> <span><?php esc_html_e( 'setup', 'order-balance' ); ?></span></h1>
+	<h1 class="obal-setup__title"><?php esc_html_e( 'Order Balance', 'modwell-order-balance-for-woocommerce' ); ?> <span><?php esc_html_e( 'setup', 'modwell-order-balance-for-woocommerce' ); ?></span></h1>
 
 	<ol class="obal-steps">
 		<?php foreach ( $obal_keys as $obal_index => $obal_key ) : ?>
@@ -41,9 +41,9 @@ $obal_current = (int) array_search( $step, $obal_keys, true );
 
 	<div class="obal-setup__card">
 		<?php if ( 'welcome' === $type ) : ?>
-			<h2><?php esc_html_e( 'Settle order changes without starting over', 'order-balance' ); ?></h2>
-			<p><?php esc_html_e( 'When a paid order changes, Order Balance works out the difference. The customer pays only what is new, or gets back what is no longer due. Each extra payment is linked to the original order and does not count twice in your sales reports.', 'order-balance' ); ?></p>
-			<p><?php esc_html_e( 'This setup takes about two minutes. Every choice can be changed later under Order Balance > Settings.', 'order-balance' ); ?></p>
+			<h2><?php esc_html_e( 'Settle order changes without starting over', 'modwell-order-balance-for-woocommerce' ); ?></h2>
+			<p><?php esc_html_e( 'When a paid order changes, Order Balance works out the difference. The customer pays only what is new, or gets back what is no longer due. Each extra payment is linked to the original order and does not count twice in your sales reports.', 'modwell-order-balance-for-woocommerce' ); ?></p>
+			<p><?php esc_html_e( 'This setup takes about two minutes. Every choice can be changed later under Order Balance > Settings.', 'modwell-order-balance-for-woocommerce' ); ?></p>
 			<table class="widefat striped obal-setup__store">
 				<tbody>
 					<?php foreach ( $store as $obal_label => $obal_value ) : ?>
@@ -52,22 +52,22 @@ $obal_current = (int) array_search( $step, $obal_keys, true );
 				</tbody>
 			</table>
 			<p class="obal-setup__actions">
-				<a class="button button-primary button-large" href="<?php echo esc_url( SetupWizard::url( $next ) ); ?>"><?php esc_html_e( 'Start', 'order-balance' ); ?></a>
+				<a class="button button-primary button-large" href="<?php echo esc_url( SetupWizard::url( $next ) ); ?>"><?php esc_html_e( 'Start', 'modwell-order-balance-for-woocommerce' ); ?></a>
 			</p>
 
 		<?php elseif ( 'ready' === $type ) : ?>
-			<h2><?php esc_html_e( 'You are ready', 'order-balance' ); ?></h2>
-			<p><?php esc_html_e( 'Next time an order changes after it was paid:', 'order-balance' ); ?></p>
+			<h2><?php esc_html_e( 'You are ready', 'modwell-order-balance-for-woocommerce' ); ?></h2>
+			<p><?php esc_html_e( 'Next time an order changes after it was paid:', 'modwell-order-balance-for-woocommerce' ); ?></p>
 			<ol class="obal-setup__list">
-				<li><?php esc_html_e( 'Edit the order as usual and recalculate it.', 'order-balance' ); ?></li>
-				<li><?php esc_html_e( 'Use the Order Balance box on the order screen to request the difference or refund it.', 'order-balance' ); ?></li>
-				<li><?php esc_html_e( 'The customer gets an email with a pay link. You see every balance payment under Order Balance > Payments.', 'order-balance' ); ?></li>
+				<li><?php esc_html_e( 'Edit the order as usual and recalculate it.', 'modwell-order-balance-for-woocommerce' ); ?></li>
+				<li><?php esc_html_e( 'Use the Order Balance box on the order screen to request the difference or refund it.', 'modwell-order-balance-for-woocommerce' ); ?></li>
+				<li><?php esc_html_e( 'The customer gets an email with a pay link. You see every balance payment under Order Balance > Payments.', 'modwell-order-balance-for-woocommerce' ); ?></li>
 			</ol>
 			<p class="obal-setup__actions">
-				<a class="button button-primary button-large" href="<?php echo esc_url( $orders ); ?>"><?php esc_html_e( 'Go to orders', 'order-balance' ); ?></a>
-				<a class="button button-large" href="<?php echo esc_url( AdminPage::url( 'settings' ) ); ?>"><?php esc_html_e( 'Open settings', 'order-balance' ); ?></a>
+				<a class="button button-primary button-large" href="<?php echo esc_url( $orders ); ?>"><?php esc_html_e( 'Go to orders', 'modwell-order-balance-for-woocommerce' ); ?></a>
+				<a class="button button-large" href="<?php echo esc_url( AdminPage::url( 'settings' ) ); ?>"><?php esc_html_e( 'Open settings', 'modwell-order-balance-for-woocommerce' ); ?></a>
 				<?php if ( ! has_action( 'obal_about_license' ) ) : ?>
-					<a class="button button-large" href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Learn about Pro', 'order-balance' ); ?></a>
+					<a class="button button-large" href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Pro is coming: get notified', 'modwell-order-balance-for-woocommerce' ); ?></a>
 				<?php endif; ?>
 			</p>
 
@@ -93,17 +93,17 @@ $obal_current = (int) array_search( $step, $obal_keys, true );
 				?>
 				<input type="hidden" name="obal_setup_step" value="<?php echo esc_attr( $step ); ?>">
 				<p class="obal-setup__actions">
-					<button type="submit" class="button button-primary button-large"><?php esc_html_e( 'Save and continue', 'order-balance' ); ?></button>
+					<button type="submit" class="button button-primary button-large"><?php esc_html_e( 'Save and continue', 'modwell-order-balance-for-woocommerce' ); ?></button>
 					<?php if ( '' !== $previous ) : ?>
-						<a class="button button-large" href="<?php echo esc_url( SetupWizard::url( $previous ) ); ?>"><?php esc_html_e( 'Back', 'order-balance' ); ?></a>
+						<a class="button button-large" href="<?php echo esc_url( SetupWizard::url( $previous ) ); ?>"><?php esc_html_e( 'Back', 'modwell-order-balance-for-woocommerce' ); ?></a>
 					<?php endif; ?>
-					<a class="obal-setup__skip" href="<?php echo esc_url( SetupWizard::url( $next ) ); ?>"><?php esc_html_e( 'Skip this step', 'order-balance' ); ?></a>
+					<a class="obal-setup__skip" href="<?php echo esc_url( SetupWizard::url( $next ) ); ?>"><?php esc_html_e( 'Skip this step', 'modwell-order-balance-for-woocommerce' ); ?></a>
 				</p>
 			</form>
 		<?php endif; ?>
 	</div>
 
 	<?php if ( 'ready' !== $type ) : ?>
-		<p class="obal-setup__footer"><a href="<?php echo esc_url( $skip_url ); ?>"><?php esc_html_e( 'Not now, I will set it up later', 'order-balance' ); ?></a></p>
+		<p class="obal-setup__footer"><a href="<?php echo esc_url( $skip_url ); ?>"><?php esc_html_e( 'Not now, I will set it up later', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
 	<?php endif; ?>
 </div>

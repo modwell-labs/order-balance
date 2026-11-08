@@ -24,13 +24,13 @@ final class PaymentActions {
 			'obal_payment_actions',
 			array(
 				'cancel' => array(
-					'label'     => __( 'Cancel payment', 'order-balance' ),
+					'label'     => __( 'Cancel payment', 'modwell-order-balance-for-woocommerce' ),
 					'available' => static function ( Payment $payment ) {
 						return $payment->is_open();
 					},
 					'callback'  => array( $this, 'cancel' ),
 					'email'     => 'obal_payment_cancelled',
-					'confirm'   => __( 'Cancel this payment? The customer will no longer be able to pay it.', 'order-balance' ),
+					'confirm'   => __( 'Cancel this payment? The customer will no longer be able to pay it.', 'modwell-order-balance-for-woocommerce' ),
 				),
 			),
 			$this->plugin
@@ -52,7 +52,7 @@ final class PaymentActions {
 	public function run( string $name, Payment $payment, array $input = array(), bool $notify = true ) {
 		$actions = $this->available( $payment );
 		if ( ! isset( $actions[ $name ] ) ) {
-			return new \WP_Error( 'obal_action_unavailable', __( 'This action is not available for this payment.', 'order-balance' ) );
+			return new \WP_Error( 'obal_action_unavailable', __( 'This action is not available for this payment.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$result = call_user_func( $actions[ $name ]['callback'], $payment, $input, $notify );
@@ -65,13 +65,13 @@ final class PaymentActions {
 	}
 
 	public function cancel( Payment $payment, array $input = array(), bool $notify = true ): string {
-		$payment->update_status( 'cancelled', __( 'Cancelled by the store.', 'order-balance' ) );
+		$payment->update_status( 'cancelled', __( 'Cancelled by the store.', 'modwell-order-balance-for-woocommerce' ) );
 
 		$parent = $payment->get_parent_order();
 		if ( $parent ) {
 			$parent->add_order_note(
 				/* translators: %s: payment number */
-				sprintf( __( 'Balance payment #%s cancelled.', 'order-balance' ), $payment->get_order_number() )
+				sprintf( __( 'Balance payment #%s cancelled.', 'modwell-order-balance-for-woocommerce' ), $payment->get_order_number() )
 			);
 		}
 
@@ -79,7 +79,7 @@ final class PaymentActions {
 			self::send( 'obal_payment_cancelled_notification', $payment );
 		}
 
-		return __( 'Payment cancelled.', 'order-balance' );
+		return __( 'Payment cancelled.', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public static function send( string $hook, Payment $payment ): void {

@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 	<?php
 	printf(
 		/* translators: %s: link to the order */
-		esc_html__( 'This payment belongs to order %s.', 'order-balance' ),
+		esc_html__( 'This payment belongs to order %s.', 'modwell-order-balance-for-woocommerce' ),
 		'<a href="' . esc_url( $parent->get_view_order_url() ) . '">#' . esc_html( $parent->get_order_number() ) . '</a>'
 	);
 	?>

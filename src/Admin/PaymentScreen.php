@@ -69,19 +69,19 @@ final class PaymentScreen implements Module {
 		check_admin_referer( self::NOTE . '_' . $payment_id );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_die( esc_html__( 'You are not allowed to do this.', 'order-balance' ), 403 );
+			wp_die( esc_html__( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ), 403 );
 		}
 
 		$payment = wc_get_order( $payment_id );
 		if ( ! $payment instanceof Payment ) {
-			wp_die( esc_html__( 'Payment not found.', 'order-balance' ), 404 );
+			wp_die( esc_html__( 'Payment not found.', 'modwell-order-balance-for-woocommerce' ), 404 );
 		}
 
 		$note = isset( $_POST['obal_note'] ) ? wp_kses_post( trim( wp_unslash( $_POST['obal_note'] ) ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( '' !== $note ) {
 			$to_customer = ! empty( $_POST['obal_note_customer'] );
 			$payment->add_order_note( $note, $to_customer ? 1 : 0, true );
-			AdminPage::notice( $to_customer ? __( 'Note added and sent to the customer.', 'order-balance' ) : __( 'Note added.', 'order-balance' ) );
+			AdminPage::notice( $to_customer ? __( 'Note added and sent to the customer.', 'modwell-order-balance-for-woocommerce' ) : __( 'Note added.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		wp_safe_redirect( AdminPage::payment_url( $payment_id ) );
@@ -93,12 +93,12 @@ final class PaymentScreen implements Module {
 		check_admin_referer( self::ACTION . '_' . $payment_id );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_die( esc_html__( 'You are not allowed to do this.', 'order-balance' ), 403 );
+			wp_die( esc_html__( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ), 403 );
 		}
 
 		$payment = wc_get_order( $payment_id );
 		if ( ! $payment instanceof Payment ) {
-			wp_die( esc_html__( 'Payment not found.', 'order-balance' ), 404 );
+			wp_die( esc_html__( 'Payment not found.', 'modwell-order-balance-for-woocommerce' ), 404 );
 		}
 
 		$name   = isset( $_POST['obal_action'] ) ? sanitize_key( wp_unslash( $_POST['obal_action'] ) ) : '';

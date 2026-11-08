@@ -26,8 +26,8 @@ final class Settings implements Module {
 			array(
 				'id'    => 'obal_payments',
 				'type'  => 'title',
-				'title' => __( 'Payment methods', 'order-balance' ),
-				'desc'  => __( 'Choose when an order counts as paid for each payment method. Orders paid at checkout start tracking from the amount paid. Orders paid later start at zero: the whole total is due until it is paid.', 'order-balance' ),
+				'title' => __( 'Payment methods', 'modwell-order-balance-for-woocommerce' ),
+				'desc'  => __( 'Choose when an order counts as paid for each payment method. Orders paid at checkout start tracking from the amount paid. Orders paid later start at zero: the whole total is due until it is paid.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			array(
 				'id'   => 'obal_gateway_modes',
@@ -40,22 +40,22 @@ final class Settings implements Module {
 			array(
 				'id'    => 'obal_statuses',
 				'type'  => 'title',
-				'title' => __( 'Order status', 'order-balance' ),
-				'desc'  => __( 'Which status an order has while a balance payment is outstanding, and after it has been paid.', 'order-balance' ),
+				'title' => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
+				'desc'  => __( 'Which status an order has while a balance payment is outstanding, and after it has been paid.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			array(
 				'id'      => 'obal_partial_status',
 				'type'    => 'checkbox',
-				'title'   => __( 'Partially paid status', 'order-balance' ),
-				'desc'    => __( 'Move the order to "Partially paid" while a requested payment is outstanding', 'order-balance' ),
+				'title'   => __( 'Partially paid status', 'modwell-order-balance-for-woocommerce' ),
+				'desc'    => __( 'Move the order to "Partially paid" while a requested payment is outstanding', 'modwell-order-balance-for-woocommerce' ),
 				'default' => 'yes',
 			),
 			array(
 				'id'      => 'obal_paid_status',
 				'type'    => 'select',
 				'class'   => 'wc-enhanced-select',
-				'title'   => __( 'Status after the balance is paid', 'order-balance' ),
-				'desc'    => __( 'Order status to set when the customer pays the requested balance in full.', 'order-balance' ),
+				'title'   => __( 'Status after the balance is paid', 'modwell-order-balance-for-woocommerce' ),
+				'desc'    => __( 'Order status to set when the customer pays the requested balance in full.', 'modwell-order-balance-for-woocommerce' ),
 				'default' => 'previous',
 				'options' => $this->paid_status_options(),
 			),
@@ -66,10 +66,10 @@ final class Settings implements Module {
 			array(
 				'id'    => 'obal_waiting',
 				'type'  => 'title',
-				'title' => __( 'When the order changes again', 'order-balance' ),
+				'title' => __( 'When the order changes again', 'modwell-order-balance-for-woocommerce' ),
 				'desc'  => (string) apply_filters(
 					'obal_waiting_description',
-					__( 'If the order changes while a balance payment is still waiting to be paid, the Balance box offers to update that payment, so the customer keeps one link and pays once. If the order no longer needs it, the payment is cancelled instead. The free version takes one balance payment per order: a paid payment uses it, a refunded one frees it. Order Balance Pro can update waiting payments automatically, with the email sent a few minutes later, or request separate payments without a limit.', 'order-balance' )
+					__( 'If the order changes while a balance payment is still waiting to be paid, the Balance box offers to update that payment, so the customer keeps one link and pays once. If the order no longer needs it, the payment is cancelled instead. When the payment is paid and the order changes again, you can request the new difference as another payment. Automatic updates, with the email sent a few minutes later, are planned for Order Balance Pro, which is in development.', 'modwell-order-balance-for-woocommerce' )
 				),
 			),
 			array(
@@ -79,23 +79,23 @@ final class Settings implements Module {
 			array(
 				'id'    => 'obal_rounding',
 				'type'  => 'title',
-				'title' => __( 'Rounding', 'order-balance' ),
-				'desc'  => __( 'Absorb a small difference, for example from tax rounding, with a rounding line on the order instead of asking for a payment or a refund.', 'order-balance' ),
+				'title' => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
+				'desc'  => __( 'Absorb a small difference, for example from tax rounding, with a rounding line on the order instead of asking for a payment or a refund.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			array(
 				'id'       => 'obal_auto_rounding',
 				'type'     => 'checkbox',
-				'title'    => __( 'Automatic rounding', 'order-balance' ),
-				'desc'     => __( 'Apply the rounding adjustment automatically when order totals are recalculated', 'order-balance' ),
-				'desc_tip' => __( 'Off by default. When on, a difference within the threshold is absorbed without asking: the order total changes by that amount and nothing is requested or refunded, so a small item added to a paid order can end up free. When off, the order shows the small balance and you absorb it with one click.', 'order-balance' ),
+				'title'    => __( 'Automatic rounding', 'modwell-order-balance-for-woocommerce' ),
+				'desc'     => __( 'Apply the rounding adjustment automatically when order totals are recalculated', 'modwell-order-balance-for-woocommerce' ),
+				'desc_tip' => __( 'Off by default. When on, a difference within the threshold is absorbed without asking: the order total changes by that amount and nothing is requested or refunded, so a small item added to a paid order can end up free. When off, the order shows the small balance and you absorb it with one click.', 'modwell-order-balance-for-woocommerce' ),
 				'default'  => 'no',
 			),
 			array(
 				'id'                => 'obal_rounding_threshold',
 				'type'              => 'number',
-				'title'             => __( 'Rounding threshold', 'order-balance' ),
-				'desc'              => __( 'Differences up to this amount can be absorbed, automatically or with the "Absorb difference" button on the order. Set 0 to turn rounding off.', 'order-balance' ),
-				'desc_tip'          => __( 'The amount is in your store currency. Keep it small: absorbing changes the order total by that amount.', 'order-balance' ),
+				'title'             => __( 'Rounding threshold', 'modwell-order-balance-for-woocommerce' ),
+				'desc'              => __( 'Differences up to this amount can be absorbed, automatically or with the "Absorb difference" button on the order. Set 0 to turn rounding off.', 'modwell-order-balance-for-woocommerce' ),
+				'desc_tip'          => __( 'The amount is in your store currency. Keep it small: absorbing changes the order total by that amount.', 'modwell-order-balance-for-woocommerce' ),
 				'default'           => '1',
 				'custom_attributes' => array(
 					'min'  => '0',
@@ -105,9 +105,9 @@ final class Settings implements Module {
 			array(
 				'id'      => 'obal_adjustment_label',
 				'type'    => 'text',
-				'title'   => __( 'Rounding line label', 'order-balance' ),
-				'desc'    => __( 'Name of the rounding line the customer sees on the order.', 'order-balance' ),
-				'default' => __( 'Rounding adjustment', 'order-balance' ),
+				'title'   => __( 'Rounding line label', 'modwell-order-balance-for-woocommerce' ),
+				'desc'    => __( 'Name of the rounding line the customer sees on the order.', 'modwell-order-balance-for-woocommerce' ),
+				'default' => __( 'Rounding adjustment', 'modwell-order-balance-for-woocommerce' ),
 			),
 			array(
 				'id'   => 'obal_rounding',
@@ -116,15 +116,15 @@ final class Settings implements Module {
 			array(
 				'id'    => 'obal_fees',
 				'type'  => 'title',
-				'title' => __( 'Payment method fees', 'order-balance' ),
-				'desc'  => __( 'Fees and surcharges that a payment method adds to a balance payment never count toward the order balance.', 'order-balance' ),
+				'title' => __( 'Payment method fees', 'modwell-order-balance-for-woocommerce' ),
+				'desc'  => __( 'Fees and surcharges that a payment method adds to a balance payment never count toward the order balance.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			array(
 				'id'       => 'obal_refund_payment_fees',
 				'type'     => 'checkbox',
-				'title'    => __( 'Refunds', 'order-balance' ),
-				'desc'     => __( 'Refund payment method fees with the payment, in proportion to the refunded amount', 'order-balance' ),
-				'desc_tip' => __( 'When this is on, a refund returns a matching share of the fees (card network rules usually require this for card surcharges). When it is off, refunds are limited to the balance part and the fees are kept. Surcharge and refund rules differ by country and card network, so check them before you keep fees.', 'order-balance' ),
+				'title'    => __( 'Refunds', 'modwell-order-balance-for-woocommerce' ),
+				'desc'     => __( 'Refund payment method fees with the payment, in proportion to the refunded amount', 'modwell-order-balance-for-woocommerce' ),
+				'desc_tip' => __( 'When this is on, a refund returns a matching share of the fees (card network rules usually require this for card surcharges). When it is off, refunds are limited to the balance part and the fees are kept. Surcharge and refund rules differ by country and card network, so check them before you keep fees.', 'modwell-order-balance-for-woocommerce' ),
 				'default'  => 'yes',
 			),
 			array(
@@ -142,15 +142,15 @@ final class Settings implements Module {
 				array(
 					'id'    => 'obal_data',
 					'type'  => 'title',
-					'title' => __( 'Data', 'order-balance' ),
-					'desc'  => __( 'When you delete the plugin, balance payments and settings are kept so you can install it again without losing anything. Orders that are "Partially paid" are moved to "On hold" so they stay visible.', 'order-balance' ),
+					'title' => __( 'Data', 'modwell-order-balance-for-woocommerce' ),
+					'desc'  => __( 'When you delete the plugin, balance payments and settings are kept so you can install it again without losing anything. Orders that are "Partially paid" are moved to "On hold" so they stay visible.', 'modwell-order-balance-for-woocommerce' ),
 				),
 				array(
 					'id'       => self::DELETE_DATA,
 					'type'     => 'checkbox',
-					'title'    => __( 'Delete all data', 'order-balance' ),
-					'desc'     => __( 'Delete everything Order Balance created when the plugin is deleted, including balance payments, their refunds and notes', 'order-balance' ),
-					'desc_tip' => __( 'This cannot be undone. Payment records are part of your order history, so export or back them up first. Orders keep their items and totals; only Order Balance data is removed.', 'order-balance' ),
+					'title'    => __( 'Delete all data', 'modwell-order-balance-for-woocommerce' ),
+					'desc'     => __( 'Delete everything Order Balance created when the plugin is deleted, including balance payments, their refunds and notes', 'modwell-order-balance-for-woocommerce' ),
+					'desc_tip' => __( 'This cannot be undone. Payment records are part of your order history, so export or back them up first. Orders keep their items and totals; only Order Balance data is removed.', 'modwell-order-balance-for-woocommerce' ),
 					'default'  => 'no',
 				),
 				array(
@@ -174,23 +174,23 @@ final class Settings implements Module {
 			'obal_settings_categories',
 			array(
 				'payments' => array(
-					'label'    => __( 'Payment methods', 'order-balance' ),
+					'label'    => __( 'Payment methods', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_payments' ),
 				),
 				'status'   => array(
-					'label'    => __( 'Order status', 'order-balance' ),
+					'label'    => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_statuses' ),
 				),
 				'changes'  => array(
-					'label'    => __( 'Order changes', 'order-balance' ),
+					'label'    => __( 'Order changes', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_waiting' ),
 				),
 				'rounding' => array(
-					'label'    => __( 'Rounding', 'order-balance' ),
+					'label'    => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_rounding' ),
 				),
 				'fees'     => array(
-					'label'    => __( 'Fees', 'order-balance' ),
+					'label'    => __( 'Fees', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_fees', 'obal_change_fee' ),
 				),
 			)
@@ -218,7 +218,7 @@ final class Settings implements Module {
 		}
 		if ( isset( $sections['obal_data'] ) ) {
 			$categories['data'] = array(
-				'label'    => __( 'Data', 'order-balance' ),
+				'label'    => __( 'Data', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => array( 'obal_data' ),
 			);
 		}
@@ -282,10 +282,10 @@ final class Settings implements Module {
 		return apply_filters(
 			'obal_payment_modes',
 			array(
-				self::MODE_CHECKOUT   => __( 'Paid at checkout', 'order-balance' ),
-				self::MODE_PROCESSING => __( 'Paid later: mark paid at Processing', 'order-balance' ),
-				self::MODE_COMPLETED  => __( 'Paid later: mark paid at Completed', 'order-balance' ),
-				self::MODE_MANUAL     => __( 'Paid later: record payments manually', 'order-balance' ),
+				self::MODE_CHECKOUT   => __( 'Paid at checkout', 'modwell-order-balance-for-woocommerce' ),
+				self::MODE_PROCESSING => __( 'Paid later: mark paid at Processing', 'modwell-order-balance-for-woocommerce' ),
+				self::MODE_COMPLETED  => __( 'Paid later: mark paid at Completed', 'modwell-order-balance-for-woocommerce' ),
+				self::MODE_MANUAL     => __( 'Paid later: record payments manually', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}
@@ -299,7 +299,7 @@ final class Settings implements Module {
 			);
 		}
 		$rows[ self::NO_METHOD ] = array(
-			'title'   => __( 'No payment method (orders created in the admin)', 'order-balance' ),
+			'title'   => __( 'No payment method (orders created in the admin)', 'modwell-order-balance-for-woocommerce' ),
 			'enabled' => true,
 		);
 		return $rows;
@@ -313,8 +313,8 @@ final class Settings implements Module {
 				<table class="widefat striped obal-modes">
 					<thead>
 						<tr>
-							<th><?php esc_html_e( 'Payment method', 'order-balance' ); ?></th>
-							<th><?php esc_html_e( 'Counts as paid', 'order-balance' ); ?></th>
+							<th><?php esc_html_e( 'Payment method', 'modwell-order-balance-for-woocommerce' ); ?></th>
+							<th><?php esc_html_e( 'Counts as paid', 'modwell-order-balance-for-woocommerce' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -325,7 +325,7 @@ final class Settings implements Module {
 									<?php if ( self::NO_METHOD !== $id ) : ?>
 										<code><?php echo esc_html( $id ); ?></code>
 										<?php if ( ! $row['enabled'] ) : ?>
-											<span class="description"><?php esc_html_e( '(disabled)', 'order-balance' ); ?></span>
+											<span class="description"><?php esc_html_e( '(disabled)', 'modwell-order-balance-for-woocommerce' ); ?></span>
 										<?php endif; ?>
 									<?php endif; ?>
 								</td>
@@ -386,7 +386,7 @@ final class Settings implements Module {
 	}
 
 	public function paid_status_options(): array {
-		$options  = array( 'previous' => __( 'Status the order had before the request', 'order-balance' ) );
+		$options  = array( 'previous' => __( 'Status the order had before the request', 'modwell-order-balance-for-woocommerce' ) );
 		$excluded = array( 'wc-pending', 'wc-failed', 'wc-cancelled', 'wc-refunded', 'wc-checkout-draft', 'wc-obal-partial' );
 		foreach ( wc_get_order_statuses() as $key => $label ) {
 			if ( ! in_array( $key, $excluded, true ) ) {
@@ -415,7 +415,7 @@ final class Settings implements Module {
 
 	public function adjustment_label(): string {
 		$label = (string) $this->get( 'adjustment_label', '' );
-		return '' !== $label ? $label : __( 'Rounding adjustment', 'order-balance' );
+		return '' !== $label ? $label : __( 'Rounding adjustment', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	private function default_mode( string $id ): string {

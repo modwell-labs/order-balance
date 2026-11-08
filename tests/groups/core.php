@@ -27,9 +27,9 @@ $check( 'initial paid kept after edit', '25.00' === (string) $order->get_meta( B
 $check( 'balance due 12', 12.0 === $b->due, $b );
 
 $limit = static function () {
-	return 1;
+	return false;
 };
-add_filter( 'obal_max_extra_payments', $limit, 99 );
+add_filter( 'obal_request_while_open', $limit, 99 );
 
 $status_before = $order->get_status();
 $mails_before  = count( $obal_mails );
@@ -47,7 +47,7 @@ $order->calculate_totals();
 $order  = wc_get_order( $order->get_id() );
 $second = $plugin->service()->request( $order );
 $check( 'free: no second payment while one is waiting', is_wp_error( $second ) && 'obal_waiting' === $second->get_error_code(), is_wp_error( $second ) ? $second->get_error_code() : 'created' );
-remove_filter( 'obal_max_extra_payments', $limit, 99 );
+remove_filter( 'obal_request_while_open', $limit, 99 );
 
 $custom = $plugin->service()->request( $order, 5.0, false );
 $check( 'pro custom amount payment', $custom instanceof Payment && 5.0 === (float) $custom->get_total(), is_wp_error( $custom ) ? $custom->get_error_message() : '' );

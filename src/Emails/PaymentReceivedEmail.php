@@ -9,8 +9,8 @@ class PaymentReceivedEmail extends PaymentEmail {
 	public function __construct() {
 		$this->id             = 'obal_payment_received';
 		$this->customer_email = true;
-		$this->title          = __( 'Balance payment received', 'order-balance' );
-		$this->description    = __( 'Receipt sent to the payer when a balance payment is paid.', 'order-balance' );
+		$this->title          = __( 'Balance payment received', 'modwell-order-balance-for-woocommerce' );
+		$this->description    = __( 'Receipt sent to the payer when a balance payment is paid.', 'modwell-order-balance-for-woocommerce' );
 		parent::__construct();
 	}
 
@@ -19,14 +19,14 @@ class PaymentReceivedEmail extends PaymentEmail {
 	}
 
 	public function get_default_subject() {
-		return __( 'Payment received for your {site_title} order #{order_number}', 'order-balance' );
+		return __( 'Payment received for your {site_title} order #{order_number}', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public function get_default_heading() {
-		return __( 'Thank you for your payment', 'order-balance' );
+		return __( 'Thank you for your payment', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public function message(): string {
-		return __( 'We have received your payment #{payment_number} for order #{order_number}.', 'order-balance' );
+		return __( 'We have received your payment #{payment_number} for order #{order_number}.', 'modwell-order-balance-for-woocommerce' );
 	}
 }

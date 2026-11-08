@@ -21,7 +21,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 	<p>
 		<?php
 		/* translators: %s: payer first name */
-		printf( esc_html__( 'Hi %s,', 'order-balance' ), esc_html( $payment->get_billing_first_name() ) );
+		printf( esc_html__( 'Hi %s,', 'modwell-order-balance-for-woocommerce' ), esc_html( $payment->get_billing_first_name() ) );
 		?>
 	</p>
 <?php endif; ?>
@@ -30,32 +30,32 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 
 <table cellspacing="0" cellpadding="6" border="1" style="width:100%;margin-bottom:24px;border-collapse:collapse;">
 	<tr>
-		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Payment', 'order-balance' ); ?></th>
+		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Payment', 'modwell-order-balance-for-woocommerce' ); ?></th>
 		<td style="text-align:right;">#<?php echo esc_html( $payment->get_order_number() ); ?></td>
 	</tr>
 	<tr>
-		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Order', 'order-balance' ); ?></th>
+		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Order', 'modwell-order-balance-for-woocommerce' ); ?></th>
 		<td style="text-align:right;">#<?php echo esc_html( $order->get_order_number() ); ?></td>
 	</tr>
 	<tr>
-		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Amount', 'order-balance' ); ?></th>
+		<th scope="row" style="text-align:left;"><?php esc_html_e( 'Amount', 'modwell-order-balance-for-woocommerce' ); ?></th>
 		<td style="text-align:right;"><strong><?php echo wp_kses_post( wc_price( $payment->get_total(), $obal_currency ) ); ?></strong></td>
 	</tr>
 	<?php if ( $payment->get_total_refunded() > 0 ) : ?>
 		<tr>
-			<th scope="row" style="text-align:left;"><?php esc_html_e( 'Refunded', 'order-balance' ); ?></th>
+			<th scope="row" style="text-align:left;"><?php esc_html_e( 'Refunded', 'modwell-order-balance-for-woocommerce' ); ?></th>
 			<td style="text-align:right;"><?php echo wp_kses_post( wc_price( $payment->get_total_refunded(), $obal_currency ) ); ?></td>
 		</tr>
 	<?php endif; ?>
 	<?php if ( $payment->get_payment_method_title() ) : ?>
 		<tr>
-			<th scope="row" style="text-align:left;"><?php esc_html_e( 'Payment method', 'order-balance' ); ?></th>
+			<th scope="row" style="text-align:left;"><?php esc_html_e( 'Payment method', 'modwell-order-balance-for-woocommerce' ); ?></th>
 			<td style="text-align:right;"><?php echo esc_html( $payment->get_payment_method_title() ); ?></td>
 		</tr>
 	<?php endif; ?>
 	<?php if ( $sent_to_admin ) : ?>
 		<tr>
-			<th scope="row" style="text-align:left;"><?php esc_html_e( 'Payer', 'order-balance' ); ?></th>
+			<th scope="row" style="text-align:left;"><?php esc_html_e( 'Payer', 'modwell-order-balance-for-woocommerce' ); ?></th>
 			<td style="text-align:right;"><?php echo esc_html( trim( $payment->get_formatted_billing_full_name() . ' ' . $payment->get_billing_email() ) ); ?></td>
 		</tr>
 	<?php endif; ?>
@@ -64,13 +64,13 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 <?php if ( $show_pay_button && $payment->needs_payment() ) : ?>
 	<p>
 		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="<?php echo esc_attr( \ModwellLabs\OrderBalance\Emails\Emails::button_style() ); ?>">
-			<?php esc_html_e( 'Pay now', 'order-balance' ); ?>
+			<?php esc_html_e( 'Pay now', 'modwell-order-balance-for-woocommerce' ); ?>
 		</a>
 	</p>
 <?php endif; ?>
 
 <?php if ( $sent_to_admin ) : ?>
-	<p><a href="<?php echo esc_url( $payment->get_edit_order_url() ); ?>"><?php esc_html_e( 'View payment', 'order-balance' ); ?></a></p>
+	<p><a href="<?php echo esc_url( $payment->get_edit_order_url() ); ?>"><?php esc_html_e( 'View payment', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
 <?php endif; ?>
 
 <?php

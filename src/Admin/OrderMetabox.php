@@ -29,7 +29,7 @@ final class OrderMetabox implements Module {
 	}
 
 	public function add(): void {
-		add_meta_box( 'obal-balance', __( 'Balance', 'order-balance' ), array( $this, 'render' ), self::screen(), 'side', 'high' );
+		add_meta_box( 'obal-balance', __( 'Balance', 'modwell-order-balance-for-woocommerce' ), array( $this, 'render' ), self::screen(), 'side', 'high' );
 	}
 
 	public function render( $object ): void {
@@ -59,10 +59,6 @@ final class OrderMetabox implements Module {
 				'payments'    => $this->plugin->payments()->for_order( $order ),
 				'threshold'   => $settings->threshold(),
 				'can_request' => $service->can_request( $order ),
-				'max'         => $service->max_payments( $order ),
-				'used'        => $service->used_payments( $order ),
-				'limited'     => $service->is_limited( $order ),
-				'at_limit'    => $service->limit_reached( $order ),
 				'plan'        => $service->waiting_plan( $order ),
 				'waiting'     => $service->waiting_mode( $order ),
 				'last_notice' => $service->last_notice( $order ),
@@ -85,8 +81,8 @@ final class OrderMetabox implements Module {
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( Ajax::NONCE ),
-				'error'   => __( 'Something went wrong. Reload the page and try again.', 'order-balance' ),
-				'copied'  => __( 'Copied', 'order-balance' ),
+				'error'   => __( 'Something went wrong. Reload the page and try again.', 'modwell-order-balance-for-woocommerce' ),
+				'copied'  => __( 'Copied', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}

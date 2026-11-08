@@ -60,12 +60,12 @@ final class Ajax implements Module {
 		check_ajax_referer( self::NONCE, 'nonce' );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'order-balance' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
 		}
 
 		$order = wc_get_order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( ! PaymentRepository::is_parent( $order ) ) {
-			wp_send_json_error( array( 'message' => __( 'Order not found.', 'order-balance' ) ), 404 );
+			wp_send_json_error( array( 'message' => __( 'Order not found.', 'modwell-order-balance-for-woocommerce' ) ), 404 );
 		}
 
 		return $order;
@@ -113,7 +113,7 @@ final class Ajax implements Module {
 	public function resend( \WC_Order $order ) {
 		$open = $this->plugin->payments()->open( $order );
 		$this->plugin->service()->notify( $order, $open ? end( $open ) : null );
-		$order->add_order_note( __( 'Order update email sent to the customer.', 'order-balance' ) );
+		$order->add_order_note( __( 'Order update email sent to the customer.', 'modwell-order-balance-for-woocommerce' ) );
 		return true;
 	}
 }

@@ -22,18 +22,18 @@ $obal_paid     = $payment->get_date_paid();
 $obal_kinds    = $payment->get_line_kinds();
 $obal_has_tax  = (float) $payment->get_total_tax() > 0;
 $obal_kind_tip = array(
-	Payment::LINE_BALANCE => __( 'Counts toward the order', 'order-balance' ),
-	Payment::LINE_STORE   => __( 'Store fee, does not count toward the order', 'order-balance' ),
-	Payment::LINE_GATEWAY => __( 'Added by the payment method, does not count toward the order', 'order-balance' ),
+	Payment::LINE_BALANCE => __( 'Counts toward the order', 'modwell-order-balance-for-woocommerce' ),
+	Payment::LINE_STORE   => __( 'Store fee, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
+	Payment::LINE_GATEWAY => __( 'Added by the payment method, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
 );
 $obal_store_refund = array(
-	Payment::FEE_REFUND_FULL         => __( 'refunded with a full refund', 'order-balance' ),
-	Payment::FEE_REFUND_PROPORTIONAL => __( 'refunded in proportion', 'order-balance' ),
-	Payment::FEE_REFUND_NEVER        => __( 'not refundable', 'order-balance' ),
+	Payment::FEE_REFUND_FULL         => __( 'refunded with a full refund', 'modwell-order-balance-for-woocommerce' ),
+	Payment::FEE_REFUND_PROPORTIONAL => __( 'refunded in proportion', 'modwell-order-balance-for-woocommerce' ),
+	Payment::FEE_REFUND_NEVER        => __( 'not refundable', 'modwell-order-balance-for-woocommerce' ),
 );
 $obal_method = $payment->get_payment_method_title();
 ?>
-<p class="obal-back"><a href="<?php echo esc_url( AdminPage::url( 'payments' ) ); ?>">&larr; <?php esc_html_e( 'All payments', 'order-balance' ); ?></a></p>
+<p class="obal-back"><a href="<?php echo esc_url( AdminPage::url( 'payments' ) ); ?>">&larr; <?php esc_html_e( 'All payments', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
 
 <div id="poststuff" class="obal-payment-screen">
 	<div id="post-body" class="metabox-holder columns-2">
@@ -47,7 +47,7 @@ $obal_method = $payment->get_payment_method_title();
 							<h2 class="woocommerce-order-data__heading">
 								<?php
 								/* translators: %s: payment number */
-								printf( esc_html__( 'Payment #%s details', 'order-balance' ), esc_html( $payment->get_order_number() ) );
+								printf( esc_html__( 'Payment #%s details', 'modwell-order-balance-for-woocommerce' ), esc_html( $payment->get_order_number() ) );
 								?>
 							</h2>
 							<p class="woocommerce-order-data__meta order_number">
@@ -55,18 +55,18 @@ $obal_method = $payment->get_payment_method_title();
 								$obal_meta = array();
 								if ( $parent ) {
 									/* translators: %s: order link */
-									$obal_meta[] = sprintf( __( 'Balance payment for order %s.', 'order-balance' ), '<a href="' . esc_url( $parent->get_edit_order_url() ) . '">#' . esc_html( $parent->get_order_number() ) . '</a>' );
+									$obal_meta[] = sprintf( __( 'Balance payment for order %s.', 'modwell-order-balance-for-woocommerce' ), '<a href="' . esc_url( $parent->get_edit_order_url() ) . '">#' . esc_html( $parent->get_order_number() ) . '</a>' );
 								}
 								if ( $obal_method ) {
 									$obal_meta[] = $payment->get_transaction_id()
 										/* translators: 1: payment method, 2: transaction id */
-										? sprintf( __( 'Payment via %1$s (%2$s).', 'order-balance' ), esc_html( $obal_method ), esc_html( $payment->get_transaction_id() ) )
+										? sprintf( __( 'Payment via %1$s (%2$s).', 'modwell-order-balance-for-woocommerce' ), esc_html( $obal_method ), esc_html( $payment->get_transaction_id() ) )
 										/* translators: %s: payment method */
-										: sprintf( __( 'Payment via %s.', 'order-balance' ), esc_html( $obal_method ) );
+										: sprintf( __( 'Payment via %s.', 'modwell-order-balance-for-woocommerce' ), esc_html( $obal_method ) );
 								}
 								if ( $obal_paid ) {
 									/* translators: %s: date */
-									$obal_meta[] = sprintf( __( 'Paid on %s.', 'order-balance' ), esc_html( wc_format_datetime( $obal_paid, $obal_format ) ) );
+									$obal_meta[] = sprintf( __( 'Paid on %s.', 'modwell-order-balance-for-woocommerce' ), esc_html( wc_format_datetime( $obal_paid, $obal_format ) ) );
 								}
 								echo wp_kses_post( implode( ' ', $obal_meta ) );
 								?>
@@ -74,60 +74,60 @@ $obal_method = $payment->get_payment_method_title();
 
 							<div class="order_data_column_container">
 								<div class="order_data_column">
-									<h3><?php esc_html_e( 'General', 'order-balance' ); ?></h3>
+									<h3><?php esc_html_e( 'General', 'modwell-order-balance-for-woocommerce' ); ?></h3>
 									<p class="form-field form-field-wide">
-										<label><?php esc_html_e( 'Date created:', 'order-balance' ); ?></label>
+										<label><?php esc_html_e( 'Date created:', 'modwell-order-balance-for-woocommerce' ); ?></label>
 										<?php echo esc_html( wc_format_datetime( $payment->get_date_created(), $obal_format ) ); ?>
 									</p>
 									<p class="form-field form-field-wide">
-										<label><?php esc_html_e( 'Status:', 'order-balance' ); ?></label>
+										<label><?php esc_html_e( 'Status:', 'modwell-order-balance-for-woocommerce' ); ?></label>
 										<mark class="order-status status-<?php echo esc_attr( $payment->get_status() ); ?>"><span><?php echo esc_html( wc_get_order_status_name( $payment->get_status() ) ); ?></span></mark>
 									</p>
 									<?php if ( $parent ) : ?>
 										<p class="form-field form-field-wide">
-											<label><?php esc_html_e( 'Order:', 'order-balance' ); ?></label>
+											<label><?php esc_html_e( 'Order:', 'modwell-order-balance-for-woocommerce' ); ?></label>
 											<a href="<?php echo esc_url( $parent->get_edit_order_url() ); ?>">#<?php echo esc_html( $parent->get_order_number() ); ?></a>
 											&middot; <?php echo esc_html( wc_get_order_status_name( $parent->get_status() ) ); ?>
 										</p>
 									<?php endif; ?>
 									<p class="form-field form-field-wide">
-										<label><?php esc_html_e( 'Customer:', 'order-balance' ); ?></label>
+										<label><?php esc_html_e( 'Customer:', 'modwell-order-balance-for-woocommerce' ); ?></label>
 										<?php if ( $payment->get_customer_id() ) : ?>
 											<?php $obal_user = get_user_by( 'id', $payment->get_customer_id() ); ?>
 											<a href="<?php echo esc_url( get_edit_user_link( $payment->get_customer_id() ) ); ?>"><?php echo esc_html( $obal_user ? $obal_user->display_name : '#' . $payment->get_customer_id() ); ?></a>
 										<?php else : ?>
-											<?php esc_html_e( 'Guest', 'order-balance' ); ?>
+											<?php esc_html_e( 'Guest', 'modwell-order-balance-for-woocommerce' ); ?>
 										<?php endif; ?>
 									</p>
 								</div>
 
 								<div class="order_data_column">
-									<h3><?php esc_html_e( 'Billing', 'order-balance' ); ?></h3>
+									<h3><?php esc_html_e( 'Billing', 'modwell-order-balance-for-woocommerce' ); ?></h3>
 									<div class="address">
 										<?php
 										$obal_address = $payment->get_formatted_billing_address();
-										echo $obal_address ? '<p>' . wp_kses( $obal_address, array( 'br' => array() ) ) . '</p>' : '<p class="none_set">' . esc_html__( 'No billing address set.', 'order-balance' ) . '</p>';
+										echo $obal_address ? '<p>' . wp_kses( $obal_address, array( 'br' => array() ) ) . '</p>' : '<p class="none_set">' . esc_html__( 'No billing address set.', 'modwell-order-balance-for-woocommerce' ) . '</p>';
 										?>
 										<?php if ( $payment->get_billing_email() ) : ?>
-											<p><strong><?php esc_html_e( 'Email address:', 'order-balance' ); ?></strong> <a href="<?php echo esc_url( 'mailto:' . $payment->get_billing_email() ); ?>"><?php echo esc_html( $payment->get_billing_email() ); ?></a></p>
+											<p><strong><?php esc_html_e( 'Email address:', 'modwell-order-balance-for-woocommerce' ); ?></strong> <a href="<?php echo esc_url( 'mailto:' . $payment->get_billing_email() ); ?>"><?php echo esc_html( $payment->get_billing_email() ); ?></a></p>
 										<?php endif; ?>
 										<?php if ( $payment->get_billing_phone() ) : ?>
-											<p><strong><?php esc_html_e( 'Phone:', 'order-balance' ); ?></strong> <?php echo esc_html( $payment->get_billing_phone() ); ?></p>
+											<p><strong><?php esc_html_e( 'Phone:', 'modwell-order-balance-for-woocommerce' ); ?></strong> <?php echo esc_html( $payment->get_billing_phone() ); ?></p>
 										<?php endif; ?>
 									</div>
 								</div>
 
 								<div class="order_data_column">
-									<h3><?php esc_html_e( 'Payment', 'order-balance' ); ?></h3>
-									<p><strong><?php esc_html_e( 'Payment method:', 'order-balance' ); ?></strong> <?php echo $obal_method ? esc_html( $obal_method ) : '&mdash;'; ?></p>
+									<h3><?php esc_html_e( 'Payment', 'modwell-order-balance-for-woocommerce' ); ?></h3>
+									<p><strong><?php esc_html_e( 'Payment method:', 'modwell-order-balance-for-woocommerce' ); ?></strong> <?php echo $obal_method ? esc_html( $obal_method ) : '&mdash;'; ?></p>
 									<?php if ( $payment->get_transaction_id() ) : ?>
-										<p><strong><?php esc_html_e( 'Transaction ID:', 'order-balance' ); ?></strong> <code><?php echo esc_html( $payment->get_transaction_id() ); ?></code></p>
+										<p><strong><?php esc_html_e( 'Transaction ID:', 'modwell-order-balance-for-woocommerce' ); ?></strong> <code><?php echo esc_html( $payment->get_transaction_id() ); ?></code></p>
 									<?php endif; ?>
 									<?php if ( $payment->needs_payment() ) : ?>
 										<p>
-											<strong><?php esc_html_e( 'Payment link:', 'order-balance' ); ?></strong><br>
-											<a href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Customer payment page', 'order-balance' ); ?> &rarr;</a>
-											<button type="button" class="button button-small obal-copy" data-copy="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>"><?php esc_html_e( 'Copy link', 'order-balance' ); ?></button>
+											<strong><?php esc_html_e( 'Payment link:', 'modwell-order-balance-for-woocommerce' ); ?></strong><br>
+											<a href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Customer payment page', 'modwell-order-balance-for-woocommerce' ); ?> &rarr;</a>
+											<button type="button" class="button button-small obal-copy" data-copy="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>"><?php esc_html_e( 'Copy link', 'modwell-order-balance-for-woocommerce' ); ?></button>
 										</p>
 									<?php endif; ?>
 									<?php do_action( 'obal_payment_details_rows', $payment ); ?>
@@ -140,16 +140,16 @@ $obal_method = $payment->get_payment_method_title();
 			</div>
 
 			<div id="woocommerce-order-items" class="postbox">
-				<div class="postbox-header"><h2 class="hndle"><?php esc_html_e( 'Items', 'order-balance' ); ?></h2></div>
+				<div class="postbox-header"><h2 class="hndle"><?php esc_html_e( 'Items', 'modwell-order-balance-for-woocommerce' ); ?></h2></div>
 				<div class="inside">
 					<div class="woocommerce_order_items_wrapper">
 						<table cellpadding="0" cellspacing="0" class="woocommerce_order_items">
 							<thead>
 								<tr>
-									<th class="item" colspan="2"><?php esc_html_e( 'Item', 'order-balance' ); ?></th>
-									<th class="line_cost"><?php esc_html_e( 'Total', 'order-balance' ); ?></th>
+									<th class="item" colspan="2"><?php esc_html_e( 'Item', 'modwell-order-balance-for-woocommerce' ); ?></th>
+									<th class="line_cost"><?php esc_html_e( 'Total', 'modwell-order-balance-for-woocommerce' ); ?></th>
 									<?php if ( $obal_has_tax ) : ?>
-										<th class="line_tax"><?php esc_html_e( 'Tax', 'order-balance' ); ?></th>
+										<th class="line_tax"><?php esc_html_e( 'Tax', 'modwell-order-balance-for-woocommerce' ); ?></th>
 									<?php endif; ?>
 								</tr>
 							</thead>
@@ -182,13 +182,13 @@ $obal_method = $payment->get_payment_method_title();
 												<?php
 												printf(
 													/* translators: 1: refund id, 2: date */
-													esc_html__( 'Refund #%1$s &ndash; %2$s', 'order-balance' ),
+													esc_html__( 'Refund #%1$s &ndash; %2$s', 'modwell-order-balance-for-woocommerce' ),
 													esc_html( (string) $obal_refund->get_id() ),
 													esc_html( wc_format_datetime( $obal_refund->get_date_created(), $obal_format ) )
 												);
 												if ( $obal_by ) {
 													/* translators: %s: user name */
-													echo ' ' . esc_html( sprintf( __( 'by %s', 'order-balance' ), $obal_by->display_name ) );
+													echo ' ' . esc_html( sprintf( __( 'by %s', 'modwell-order-balance-for-woocommerce' ), $obal_by->display_name ) );
 												}
 												if ( $obal_refund->get_reason() ) {
 													echo '<p class="description">' . esc_html( $obal_refund->get_reason() ) . '</p>';
@@ -209,33 +209,33 @@ $obal_method = $payment->get_payment_method_title();
 					<div class="wc-order-data-row wc-order-totals-items">
 						<table class="wc-order-totals">
 							<tr>
-								<td class="label"><?php esc_html_e( 'Toward the balance:', 'order-balance' ); ?></td>
+								<td class="label"><?php esc_html_e( 'Toward the balance:', 'modwell-order-balance-for-woocommerce' ); ?></td>
 								<td width="1%"></td>
 								<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_balance_part(), $obal_currency ) ); ?></td>
 							</tr>
 							<?php if ( $payment->get_store_fees() > 0 ) : ?>
 								<tr>
-									<td class="label"><?php esc_html_e( 'Store fees:', 'order-balance' ); ?><br><small><?php echo esc_html( $obal_store_refund[ $payment->get_store_fee_refund_mode() ] ); ?></small></td>
+									<td class="label"><?php esc_html_e( 'Store fees:', 'modwell-order-balance-for-woocommerce' ); ?><br><small><?php echo esc_html( $obal_store_refund[ $payment->get_store_fee_refund_mode() ] ); ?></small></td>
 									<td width="1%"></td>
 									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_store_fees(), $obal_currency ) ); ?></td>
 								</tr>
 							<?php endif; ?>
 							<?php if ( $payment->get_gateway_fees() > 0 ) : ?>
 								<tr>
-									<td class="label"><?php esc_html_e( 'Payment method fees:', 'order-balance' ); ?><br><small><?php echo esc_html( $payment->refunds_fees() ? __( 'refunded in proportion', 'order-balance' ) : __( 'not refundable', 'order-balance' ) ); ?></small></td>
+									<td class="label"><?php esc_html_e( 'Payment method fees:', 'modwell-order-balance-for-woocommerce' ); ?><br><small><?php echo esc_html( $payment->refunds_fees() ? __( 'refunded in proportion', 'modwell-order-balance-for-woocommerce' ) : __( 'not refundable', 'modwell-order-balance-for-woocommerce' ) ); ?></small></td>
 									<td width="1%"></td>
 									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_gateway_fees(), $obal_currency ) ); ?></td>
 								</tr>
 							<?php endif; ?>
 							<?php if ( $obal_has_tax ) : ?>
 								<tr>
-									<td class="label"><?php esc_html_e( 'Tax on fees:', 'order-balance' ); ?></td>
+									<td class="label"><?php esc_html_e( 'Tax on fees:', 'modwell-order-balance-for-woocommerce' ); ?></td>
 									<td width="1%"></td>
 									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_total_tax(), $obal_currency ) ); ?></td>
 								</tr>
 							<?php endif; ?>
 							<tr>
-								<td class="label"><?php esc_html_e( 'Payment total:', 'order-balance' ); ?></td>
+								<td class="label"><?php esc_html_e( 'Payment total:', 'modwell-order-balance-for-woocommerce' ); ?></td>
 								<td width="1%"></td>
 								<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_total(), $obal_currency ) ); ?></td>
 							</tr>
@@ -246,12 +246,12 @@ $obal_method = $payment->get_payment_method_title();
 						<?php if ( $obal_paid ) : ?>
 							<table class="wc-order-totals obal-totals-paid">
 								<tr>
-									<td class="label label-highlight"><?php esc_html_e( 'Paid:', 'order-balance' ); ?><br><small>
+									<td class="label label-highlight"><?php esc_html_e( 'Paid:', 'modwell-order-balance-for-woocommerce' ); ?><br><small>
 										<?php
 										echo esc_html(
 											$obal_method
 												/* translators: 1: date, 2: payment method */
-												? sprintf( __( '%1$s via %2$s', 'order-balance' ), wc_format_datetime( $obal_paid ), $obal_method )
+												? sprintf( __( '%1$s via %2$s', 'modwell-order-balance-for-woocommerce' ), wc_format_datetime( $obal_paid ), $obal_method )
 												: wc_format_datetime( $obal_paid )
 										);
 										?>
@@ -266,12 +266,12 @@ $obal_method = $payment->get_payment_method_title();
 						<?php if ( $payment->get_total_refunded() > 0 ) : ?>
 							<table class="wc-order-totals obal-totals-paid">
 								<tr>
-									<td class="label refunded-total"><?php esc_html_e( 'Refunded:', 'order-balance' ); ?></td>
+									<td class="label refunded-total"><?php esc_html_e( 'Refunded:', 'modwell-order-balance-for-woocommerce' ); ?></td>
 									<td width="1%"></td>
 									<td class="total refunded-total"><?php echo wp_kses_post( wc_price( '-' . $payment->get_total_refunded(), $obal_currency ) ); ?></td>
 								</tr>
 								<tr>
-									<td class="label"><?php esc_html_e( 'Net payment:', 'order-balance' ); ?></td>
+									<td class="label"><?php esc_html_e( 'Net payment:', 'modwell-order-balance-for-woocommerce' ); ?></td>
 									<td width="1%"></td>
 									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_net_paid(), $obal_currency ) ); ?></td>
 								</tr>
@@ -282,7 +282,7 @@ $obal_method = $payment->get_payment_method_title();
 						<?php if ( $payment->is_paid() ) : ?>
 							<table class="wc-order-totals obal-totals-credited">
 								<tr>
-									<td class="label label-highlight"><?php esc_html_e( 'Credited to the order:', 'order-balance' ); ?></td>
+									<td class="label label-highlight"><?php esc_html_e( 'Credited to the order:', 'modwell-order-balance-for-woocommerce' ); ?></td>
 									<td width="1%"></td>
 									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_credited(), $obal_currency ) ); ?></td>
 								</tr>
@@ -301,17 +301,17 @@ $obal_method = $payment->get_payment_method_title();
 						<h2 class="hndle">
 							<?php
 							/* translators: %s: order number */
-							printf( esc_html__( 'Order #%s', 'order-balance' ), esc_html( $parent->get_order_number() ) );
+							printf( esc_html__( 'Order #%s', 'modwell-order-balance-for-woocommerce' ), esc_html( $parent->get_order_number() ) );
 							?>
 						</h2>
 					</div>
 					<div class="inside">
 						<table class="obal-summary">
-							<tr><th><?php esc_html_e( 'Order total', 'order-balance' ); ?></th><td><?php echo wp_kses_post( wc_price( $balance->total, $obal_currency ) ); ?></td></tr>
-							<tr><th><?php esc_html_e( 'Paid', 'order-balance' ); ?></th><td><?php echo wp_kses_post( wc_price( $balance->paid, $obal_currency ) ); ?></td></tr>
-							<tr class="obal-due <?php echo $balance->is_owed() ? 'is-owed' : ( $balance->is_overpaid() ? 'is-overpaid' : '' ); ?>"><th><?php echo $balance->is_overpaid() ? esc_html__( 'Overpaid', 'order-balance' ) : esc_html__( 'Balance due', 'order-balance' ); ?></th><td><?php echo wp_kses_post( wc_price( abs( $balance->due ), $obal_currency ) ); ?></td></tr>
+							<tr><th><?php esc_html_e( 'Order total', 'modwell-order-balance-for-woocommerce' ); ?></th><td><?php echo wp_kses_post( wc_price( $balance->total, $obal_currency ) ); ?></td></tr>
+							<tr><th><?php esc_html_e( 'Paid', 'modwell-order-balance-for-woocommerce' ); ?></th><td><?php echo wp_kses_post( wc_price( $balance->paid, $obal_currency ) ); ?></td></tr>
+							<tr class="obal-due <?php echo $balance->is_owed() ? 'is-owed' : ( $balance->is_overpaid() ? 'is-overpaid' : '' ); ?>"><th><?php echo $balance->is_overpaid() ? esc_html__( 'Overpaid', 'modwell-order-balance-for-woocommerce' ) : esc_html__( 'Balance due', 'modwell-order-balance-for-woocommerce' ); ?></th><td><?php echo wp_kses_post( wc_price( abs( $balance->due ), $obal_currency ) ); ?></td></tr>
 						</table>
-						<p><a class="button" href="<?php echo esc_url( $parent->get_edit_order_url() ); ?>"><?php esc_html_e( 'Open order', 'order-balance' ); ?></a></p>
+						<p><a class="button" href="<?php echo esc_url( $parent->get_edit_order_url() ); ?>"><?php esc_html_e( 'Open order', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
 					</div>
 				</div>
 			<?php endif; ?>
@@ -333,7 +333,7 @@ $obal_method = $payment->get_payment_method_title();
 							<p>
 								<label class="obal-notify">
 									<input type="checkbox" name="obal_notify" value="1" <?php checked( ! empty( $enabled[ $obal_action['email'] ] ) ); ?>>
-									<?php esc_html_e( 'Email the customer', 'order-balance' ); ?>
+									<?php esc_html_e( 'Email the customer', 'modwell-order-balance-for-woocommerce' ); ?>
 								</label>
 							</p>
 						<?php endif; ?>
@@ -343,7 +343,7 @@ $obal_method = $payment->get_payment_method_title();
 			<?php endforeach; ?>
 
 			<div id="woocommerce-order-notes" class="postbox">
-				<div class="postbox-header"><h2 class="hndle"><?php esc_html_e( 'Payment notes', 'order-balance' ); ?></h2></div>
+				<div class="postbox-header"><h2 class="hndle"><?php esc_html_e( 'Payment notes', 'modwell-order-balance-for-woocommerce' ); ?></h2></div>
 				<div class="inside">
 					<?php if ( $notes ) : ?>
 						<ul class="order_notes">
@@ -355,7 +355,7 @@ $obal_method = $payment->get_payment_method_title();
 										<?php
 										if ( 'system' !== $obal_note->added_by ) {
 											/* translators: %s: note author */
-											echo ' ' . esc_html( sprintf( __( 'by %s', 'order-balance' ), $obal_note->added_by ) );
+											echo ' ' . esc_html( sprintf( __( 'by %s', 'modwell-order-balance-for-woocommerce' ), $obal_note->added_by ) );
 										}
 										?>
 									</p>
@@ -363,7 +363,7 @@ $obal_method = $payment->get_payment_method_title();
 							<?php endforeach; ?>
 						</ul>
 					<?php else : ?>
-						<ul class="order_notes"><li class="no-items"><?php esc_html_e( 'There are no notes yet.', 'order-balance' ); ?></li></ul>
+						<ul class="order_notes"><li class="no-items"><?php esc_html_e( 'There are no notes yet.', 'modwell-order-balance-for-woocommerce' ); ?></li></ul>
 					<?php endif; ?>
 
 					<form class="add_note" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -371,13 +371,13 @@ $obal_method = $payment->get_payment_method_title();
 						<input type="hidden" name="action" value="<?php echo esc_attr( PaymentScreen::NOTE ); ?>">
 						<input type="hidden" name="payment_id" value="<?php echo esc_attr( $payment->get_id() ); ?>">
 						<p>
-							<label for="obal_note"><?php esc_html_e( 'Add note', 'order-balance' ); ?></label>
+							<label for="obal_note"><?php esc_html_e( 'Add note', 'modwell-order-balance-for-woocommerce' ); ?></label>
 							<textarea id="obal_note" name="obal_note" class="input-text" cols="20" rows="4" required></textarea>
 						</p>
 						<p>
-							<label class="obal-notify"><input type="checkbox" name="obal_note_customer" value="1"> <?php esc_html_e( 'Note to customer (sends an email)', 'order-balance' ); ?></label>
+							<label class="obal-notify"><input type="checkbox" name="obal_note_customer" value="1"> <?php esc_html_e( 'Note to customer (sends an email)', 'modwell-order-balance-for-woocommerce' ); ?></label>
 						</p>
-						<p><button type="submit" class="button"><?php esc_html_e( 'Add', 'order-balance' ); ?></button></p>
+						<p><button type="submit" class="button"><?php esc_html_e( 'Add', 'modwell-order-balance-for-woocommerce' ); ?></button></p>
 					</form>
 				</div>
 			</div>

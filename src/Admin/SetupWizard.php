@@ -60,7 +60,7 @@ final class SetupWizard implements Module {
 	}
 
 	public function menu(): void {
-		add_submenu_page( AdminPage::SLUG, __( 'Order Balance setup', 'order-balance' ), __( 'Setup', 'order-balance' ), 'manage_woocommerce', self::PAGE, array( $this, 'render' ) );
+		add_submenu_page( AdminPage::SLUG, __( 'Order Balance setup', 'modwell-order-balance-for-woocommerce' ), __( 'Setup', 'modwell-order-balance-for-woocommerce' ), 'manage_woocommerce', self::PAGE, array( $this, 'render' ) );
 	}
 
 	public function hide_menu(): void {
@@ -92,12 +92,12 @@ final class SetupWizard implements Module {
 		}
 		printf(
 			'<div class="notice notice-info"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a> <a class="button" href="%5$s">%6$s</a></p></div>',
-			esc_html__( 'Order Balance is installed.', 'order-balance' ),
-			esc_html__( 'Take two minutes to choose how payments, balances and emails work in your store.', 'order-balance' ),
+			esc_html__( 'Order Balance is installed.', 'modwell-order-balance-for-woocommerce' ),
+			esc_html__( 'Take two minutes to choose how payments, balances and emails work in your store.', 'modwell-order-balance-for-woocommerce' ),
 			esc_url( self::url() ),
-			esc_html__( 'Run the setup', 'order-balance' ),
+			esc_html__( 'Run the setup', 'modwell-order-balance-for-woocommerce' ),
 			esc_url( wp_nonce_url( add_query_arg( 'obal_setup', 'skip', self::url() ), self::NONCE ) ),
-			esc_html__( 'Skip', 'order-balance' )
+			esc_html__( 'Skip', 'modwell-order-balance-for-woocommerce' )
 		);
 	}
 
@@ -121,44 +121,44 @@ final class SetupWizard implements Module {
 	public function steps(): array {
 		$steps = array(
 			'welcome'  => array(
-				'label' => __( 'Welcome', 'order-balance' ),
+				'label' => __( 'Welcome', 'modwell-order-balance-for-woocommerce' ),
 				'type'  => 'welcome',
 			),
 			'payments' => array(
-				'label'    => __( 'Payment methods', 'order-balance' ),
+				'label'    => __( 'Payment methods', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => $this->plugin->settings()->category_sections( 'payments' ),
-				'intro'    => __( 'Order Balance needs to know when an order counts as paid. Card and wallet payments are paid at checkout. Cash on delivery and bank transfer are paid later, so the whole total stays due until you mark it paid.', 'order-balance' ),
+				'intro'    => __( 'Order Balance needs to know when an order counts as paid. Card and wallet payments are paid at checkout. Cash on delivery and bank transfer are paid later, so the whole total stays due until you mark it paid.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			'status'   => array(
-				'label'    => __( 'Order status', 'order-balance' ),
+				'label'    => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => $this->plugin->settings()->category_sections( 'status' ),
-				'intro'    => __( 'Which status an order has while a balance payment is outstanding, and after it has been paid.', 'order-balance' ),
+				'intro'    => __( 'Which status an order has while a balance payment is outstanding, and after it has been paid.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			'changes'  => array(
-				'label'    => __( 'Order changes', 'order-balance' ),
+				'label'    => __( 'Order changes', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => $this->plugin->settings()->category_sections( 'changes' ),
-				'intro'    => __( 'What happens to a balance payment that is still waiting when the order changes again.', 'order-balance' ),
+				'intro'    => __( 'What happens to a balance payment that is still waiting when the order changes again.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			'rounding' => array(
-				'label'    => __( 'Rounding', 'order-balance' ),
+				'label'    => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => $this->plugin->settings()->category_sections( 'rounding' ),
-				'intro'    => __( 'Absorb a small difference, for example from tax rounding, with a rounding line on the order instead of asking for a payment or a refund.', 'order-balance' ),
+				'intro'    => __( 'Absorb a small difference, for example from tax rounding, with a rounding line on the order instead of asking for a payment or a refund.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			'fees'     => array(
-				'label'    => __( 'Fees', 'order-balance' ),
+				'label'    => __( 'Fees', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => $this->plugin->settings()->category_sections( 'fees' ),
-				'intro'    => __( 'How fees on balance payments are treated. Fees never count toward the order total.', 'order-balance' ),
+				'intro'    => __( 'How fees on balance payments are treated. Fees never count toward the order total.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			'emails'   => array(
-				'label' => __( 'Emails', 'order-balance' ),
+				'label' => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
 				'type'  => 'emails',
 			),
 			'more'     => array(
-				'label'    => __( 'More options', 'order-balance' ),
+				'label'    => __( 'More options', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => array(),
 			),
 			'ready'    => array(
-				'label' => __( 'Ready', 'order-balance' ),
+				'label' => __( 'Ready', 'modwell-order-balance-for-woocommerce' ),
 				'type'  => 'ready',
 			),
 		);
@@ -251,7 +251,7 @@ final class SetupWizard implements Module {
 		}
 		check_admin_referer( self::NONCE );
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'You are not allowed to do this.', 'order-balance' ), 403 );
+			wp_die( esc_html__( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ), 403 );
 		}
 
 		$step  = sanitize_key( wp_unslash( $_POST['obal_setup_step'] ) );
@@ -341,9 +341,9 @@ final class SetupWizard implements Module {
 			}
 		}
 		return array(
-			__( 'Currency', 'order-balance' )        => get_woocommerce_currency() . ' (' . html_entity_decode( get_woocommerce_currency_symbol() ) . ')',
-			__( 'Payment methods', 'order-balance' ) => $enabled ? implode( ', ', $enabled ) : __( 'None enabled yet', 'order-balance' ),
-			__( 'Taxes', 'order-balance' )           => wc_tax_enabled() ? __( 'Enabled', 'order-balance' ) : __( 'Disabled', 'order-balance' ),
+			__( 'Currency', 'modwell-order-balance-for-woocommerce' )        => get_woocommerce_currency() . ' (' . html_entity_decode( get_woocommerce_currency_symbol() ) . ')',
+			__( 'Payment methods', 'modwell-order-balance-for-woocommerce' ) => $enabled ? implode( ', ', $enabled ) : __( 'None enabled yet', 'modwell-order-balance-for-woocommerce' ),
+			__( 'Taxes', 'modwell-order-balance-for-woocommerce' )           => wc_tax_enabled() ? __( 'Enabled', 'modwell-order-balance-for-woocommerce' ) : __( 'Disabled', 'modwell-order-balance-for-woocommerce' ),
 		);
 	}
 }

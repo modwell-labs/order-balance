@@ -52,14 +52,6 @@ class Payment extends \WC_Order {
 	}
 
 	/**
-	 * Counts toward the free limit of payments per order: a requested payment that has been
-	 * paid and not refunded in full. Recorded payments (cash, transfer) never count.
-	 */
-	public function uses_slot(): bool {
-		return ! $this->is_recorded() && $this->is_paid() && ! $this->has_status( 'refunded' );
-	}
-
-	/**
 	 * Amount this payment settles on the parent order. Charges added on top
 	 * (store fees, payment method fees and their tax) are not part of it.
 	 */

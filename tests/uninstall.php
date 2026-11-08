@@ -1,6 +1,6 @@
 <?php
 /**
- * Run: wp eval-file wp-content/plugins/order-balance/tests/uninstall.php
+ * Run: wp eval-file wp-content/plugins/modwell-order-balance-for-woocommerce/tests/uninstall.php
  *
  * Destructive on the test site: runs uninstall.php twice (keep data, then delete all data).
  */
@@ -60,9 +60,9 @@ $make = static function () use ( $plugin, $product ) {
 
 $run_uninstall = static function () {
 	if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-		define( 'WP_UNINSTALL_PLUGIN', 'order-balance/order-balance.php' );
+		define( 'WP_UNINSTALL_PLUGIN', plugin_basename( dirname( __DIR__ ) . '/order-balance.php' ) );
 	}
-	include WP_PLUGIN_DIR . '/order-balance/uninstall.php';
+	include dirname( __DIR__ ) . '/uninstall.php';
 	wp_cache_flush();
 };
 

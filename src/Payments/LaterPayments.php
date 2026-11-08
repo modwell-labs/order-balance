@@ -36,14 +36,14 @@ final class LaterPayments implements Module {
 		$targets = isset( self::PAID_AT[ $mode ] ) ? self::PAID_AT[ $mode ] : array();
 
 		if ( in_array( $to, $targets, true ) && ! in_array( $from, $targets, true ) ) {
-			$this->settle( $order, __( 'Order marked as paid.', 'order-balance' ) );
+			$this->settle( $order, __( 'Order marked as paid.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 	}
 
 	public function paid_online( $order_id ): void {
 		$order = wc_get_order( $order_id );
 		if ( PaymentRepository::is_parent( $order ) && Settings::is_later( $this->plugin->settings()->order_mode( $order ) ) ) {
-			$this->settle( $order, __( 'Order paid online.', 'order-balance' ) );
+			$this->settle( $order, __( 'Order paid online.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 	}
 
@@ -54,7 +54,7 @@ final class LaterPayments implements Module {
 		}
 
 		foreach ( $this->plugin->payments()->open( $order ) as $payment ) {
-			$payment->update_status( 'cancelled', __( 'The order was paid in full another way.', 'order-balance' ) );
+			$payment->update_status( 'cancelled', __( 'The order was paid in full another way.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$balance = $this->plugin->balance()->for_order( $order );

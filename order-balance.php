@@ -1,6 +1,7 @@
 <?php
 /**
- * Plugin Name: Order Balance
+ * Plugin Name: Modwell Order Balance for WooCommerce
+ * Plugin URI: https://modwelllabs.com/order-balance/
  * Description: Collect the difference when a paid order changes, refund overpayments, and absorb rounding differences.
  * Version: 0.1.0
  * Author: Modwell Labs
@@ -10,7 +11,7 @@
  * Requires Plugins: woocommerce
  * WC requires at least: 8.0
  * WC tested up to: 11.2
- * Text Domain: order-balance
+ * Text Domain: modwell-order-balance-for-woocommerce
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -44,7 +45,7 @@ add_action(
 			add_action(
 				'admin_notices',
 				static function () {
-					echo '<div class="notice notice-error"><p>' . esc_html__( 'Order Balance requires WooCommerce.', 'order-balance' ) . '</p></div>';
+					echo '<div class="notice notice-error"><p>' . esc_html__( 'Order Balance requires WooCommerce.', 'modwell-order-balance-for-woocommerce' ) . '</p></div>';
 				}
 			);
 			return;

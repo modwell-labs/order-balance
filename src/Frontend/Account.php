@@ -78,7 +78,7 @@ final class Account implements Module {
 			if ( $payment->needs_payment() ) {
 				$actions['obal_pay'] = array(
 					'url'  => $payment->get_checkout_payment_url(),
-					'name' => __( 'Pay balance', 'order-balance' ),
+					'name' => __( 'Pay balance', 'modwell-order-balance-for-woocommerce' ),
 				);
 				break;
 			}
