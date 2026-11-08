@@ -8,9 +8,14 @@ defined( 'ABSPATH' ) || exit;
 
 class Payment extends \WC_Order {
 
-	public const TYPE           = 'obal_payment';
-	public const AMOUNT_META    = '_obal_amount';
-	public const STORE_FEE_META = '_obal_store_fee';
+	public const TYPE              = 'obal_payment';
+	public const AMOUNT_META       = '_obal_amount';
+	public const STORE_FEE_META    = '_obal_store_fee';
+	public const BALANCE_LINE_META = '_obal_balance_line';
+
+	public const LINE_BALANCE = 'balance';
+	public const LINE_STORE   = 'store';
+	public const LINE_GATEWAY = 'gateway';
 
 	/** Store fee refund modes, stored on the fee line when it is added. */
 	public const FEE_REFUND_FULL         = 'full';
@@ -36,6 +41,22 @@ class Payment extends \WC_Order {
 
 	public function is_open(): bool {
 		return $this->has_status( array( 'pending', 'on-hold', 'failed' ) );
+	}
+
+	/**
+	 * Requested and not paid yet, and safe to change: nothing is in progress at the payment
+	 * method. On hold (an offline payment being confirmed) is left alone.
+	 */
+	public function is_waiting(): bool {
+		return ! $this->is_recorded() && $this->has_status( array( 'pending', 'failed' ) );
+	}
+
+	/**
+	 * Counts toward the free limit of payments per order: a requested payment that has been
+	 * paid and not refunded in full. Recorded payments (cash, transfer) never count.
+	 */
+	public function uses_slot(): bool {
+		return ! $this->is_recorded() && $this->is_paid() && ! $this->has_status( 'refunded' );
 	}
 
 	/**
@@ -94,6 +115,34 @@ class Payment extends \WC_Order {
 			}
 		}
 		return self::FEE_REFUND_NEVER;
+	}
+
+	/**
+	 * What each fee line is: the balance line, a store fee or a payment method fee.
+	 * Payments created before lines were marked: the first unmarked line is the balance line.
+	 *
+	 * @return array<int, string> item id => LINE_* constant
+	 */
+	public function get_line_kinds(): array {
+		$kinds  = array();
+		$marked = false;
+		foreach ( $this->get_fees() as $id => $fee ) {
+			if ( $fee->get_meta( self::BALANCE_LINE_META ) ) {
+				$marked = true;
+			}
+		}
+		$first = true;
+		foreach ( $this->get_fees() as $id => $fee ) {
+			if ( $fee->get_meta( self::STORE_FEE_META ) ) {
+				$kinds[ $id ] = self::LINE_STORE;
+			} elseif ( $marked ? (bool) $fee->get_meta( self::BALANCE_LINE_META ) : $first ) {
+				$kinds[ $id ] = self::LINE_BALANCE;
+				$first        = false;
+			} else {
+				$kinds[ $id ] = self::LINE_GATEWAY;
+			}
+		}
+		return $kinds;
 	}
 
 	/**

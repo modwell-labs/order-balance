@@ -5,8 +5,17 @@
  * @var ModwellLabs\OrderBalance\Payments\Payment[]      $payments
  * @var float                                            $threshold
  * @var bool                                             $can_request
- * @var int                                              $max
+ * @var int                                              $max       Payments allowed per order, 0 = no limit.
+ * @var int                                              $used      Paid payments that count toward the limit.
+ * @var bool                                             $limited
+ * @var bool                                             $at_limit
+ * @var array                                            $plan      What updating the waiting payment would do.
+ * @var string                                           $waiting   button | auto | new
+ * @var array|null                                       $last_notice Last "Order updated" email: payment, amount, time.
+ * @var string                                           $mode_label
  */
+
+use ModwellLabs\OrderBalance\Payments\BalanceService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,6 +48,15 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 
 		<p class="obal-muted obal-mode"><?php echo esc_html( $mode_label ); ?></p>
 
+		<?php if ( $limited ) : ?>
+			<p class="obal-limit<?php echo $at_limit ? ' is-reached' : ''; ?>">
+				<?php
+				/* translators: 1: payments used, 2: payments allowed */
+				printf( esc_html__( 'Balance payments: %1$d / %2$d', 'order-balance' ), (int) $used, (int) $max );
+				?>
+			</p>
+		<?php endif; ?>
+
 		<?php if ( $payments ) : ?>
 			<ul class="obal-payments">
 				<?php foreach ( $payments as $obal_payment ) : ?>
@@ -67,24 +85,66 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 				</button>
 			<?php endif; ?>
 
-			<?php if ( $balance->unrequested() > 0 ) : ?>
-				<?php if ( $can_request ) : ?>
-					<?php do_action( 'obal_metabox_request_fields', $order, $balance ); ?>
-					<label class="obal-notify"><input type="checkbox" id="obal-notify" checked> <?php esc_html_e( 'Email the customer', 'order-balance' ); ?></label>
-					<button type="button" class="button button-primary obal-action" data-action="request_payment">
+			<?php
+			// The order changed while a payment is waiting. A decrease is always offered here,
+			// because a new payment cannot take money off. In "new" mode an increase becomes
+			// a separate payment instead; in "auto" mode Pro applies it on its own.
+			$obal_show_update = $plan && ( BalanceService::WAITING_BUTTON === $waiting || $plan[0]['to'] < $plan[0]['from'] );
+			?>
+			<?php if ( $obal_show_update ) : ?>
+				<div class="obal-group obal-update" data-obal-group>
+					<?php foreach ( $plan as $obal_step ) : ?>
+						<p class="obal-muted">
+							<?php
+							echo esc_html(
+								$obal_step['to'] > 0
+									/* translators: 1: payment number, 2: old amount, 3: new amount */
+									? sprintf( __( 'Payment #%1$s: %2$s → %3$s', 'order-balance' ), $obal_step['payment']->get_order_number(), wp_strip_all_tags( wc_price( $obal_step['from'], $obal_currency ) ), wp_strip_all_tags( wc_price( $obal_step['to'], $obal_currency ) ) )
+									/* translators: 1: payment number, 2: amount */
+									: sprintf( __( 'Payment #%1$s (%2$s) is no longer needed and will be cancelled', 'order-balance' ), $obal_step['payment']->get_order_number(), wp_strip_all_tags( wc_price( $obal_step['from'], $obal_currency ) ) )
+							);
+							?>
+						</p>
+					<?php endforeach; ?>
+					<label class="obal-notify"><input type="checkbox" class="obal-notify-input" checked> <?php esc_html_e( 'Email the customer', 'order-balance' ); ?></label>
+					<button type="button" class="button button-primary obal-action" data-action="update_payment">
 						<?php
-						/* translators: %s: amount */
-						printf( esc_html__( 'Request %s', 'order-balance' ), wp_kses_post( wc_price( $balance->unrequested(), $obal_currency ) ) );
+						echo esc_html(
+							count( $plan ) > 1 || $plan[0]['to'] > 0
+								/* translators: %s: payment number */
+								? sprintf( __( 'Update payment #%s', 'order-balance' ), $plan[0]['payment']->get_order_number() )
+								/* translators: %s: payment number */
+								: sprintf( __( 'Cancel payment #%s', 'order-balance' ), $plan[0]['payment']->get_order_number() )
+						);
 						?>
 					</button>
-				<?php else : ?>
-					<p class="obal-muted">
-						<?php
-						/* translators: %d: number of extra payments */
-						printf( esc_html( _n( 'This order already has %d extra payment.', 'This order already has %d extra payments.', $max, 'order-balance' ) ), (int) $max );
-						?>
-					</p>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $balance->unrequested() > 0 && ! ( $obal_show_update && ! $can_request ) ) : ?>
+				<?php if ( $can_request ) : ?>
+					<div class="obal-group obal-request" data-obal-group>
+						<?php do_action( 'obal_metabox_request_fields', $order, $balance ); ?>
+						<label class="obal-notify"><input type="checkbox" id="obal-notify" class="obal-notify-input" checked> <?php esc_html_e( 'Email the customer', 'order-balance' ); ?></label>
+						<button type="button" class="button<?php echo $obal_show_update ? '' : ' button-primary'; ?> obal-action" data-action="request_payment">
+							<?php
+							/* translators: %s: amount */
+							printf( esc_html__( 'Request %s', 'order-balance' ), wp_kses_post( wc_price( $balance->unrequested(), $obal_currency ) ) );
+							?>
+						</button>
+					</div>
+				<?php elseif ( $at_limit ) : ?>
+					<div class="obal-limit-notice">
+						<p>
+							<strong><?php esc_html_e( 'Payment limit reached for this order.', 'order-balance' ); ?></strong>
+							<?php esc_html_e( 'The free version takes one balance payment per order. A refunded payment frees the place again.', 'order-balance' ); ?>
+						</p>
+						<p><a class="button" href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Get Order Balance Pro', 'order-balance' ); ?></a></p>
+						<p class="obal-muted"><?php esc_html_e( 'You can still record a payment received outside the website below.', 'order-balance' ); ?></p>
+					</div>
 					<?php do_action( 'obal_metabox_limit_reached', $order, $balance ); ?>
+				<?php elseif ( ! $obal_show_update ) : ?>
+					<p class="obal-muted"><?php esc_html_e( 'A balance payment is on hold while the payment method confirms it. When it is paid or cancelled, you can request the rest.', 'order-balance' ); ?></p>
 				<?php endif; ?>
 			<?php endif; ?>
 
@@ -109,12 +169,29 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 			<?php endif; ?>
 
 			<?php if ( $balance->requested > 0 ) : ?>
+				<?php if ( $last_notice ) : ?>
+					<p class="obal-muted obal-email-status">
+						<?php
+						$obal_notice_payment = $last_notice['payment'] ? wc_get_order( (int) $last_notice['payment'] ) : null;
+						echo esc_html(
+							sprintf(
+								/* translators: 1: date and time, 2: amount, 3: payment number */
+								__( 'Last update email: %1$s, %2$s (#%3$s).', 'order-balance' ),
+								wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $last_notice['time'] ),
+								wp_strip_all_tags( wc_price( (float) $last_notice['amount'], $obal_currency ) ),
+								$obal_notice_payment ? $obal_notice_payment->get_order_number() : (string) $last_notice['payment']
+							)
+						);
+						?>
+					</p>
+				<?php endif; ?>
+				<?php do_action( 'obal_metabox_email_status', $order ); ?>
 				<button type="button" class="button-link obal-action" data-action="resend"><?php esc_html_e( 'Resend update email', 'order-balance' ); ?></button>
 			<?php endif; ?>
 
 			<?php do_action( 'obal_metabox_actions', $order, $balance ); ?>
 		</div>
 
-		<p class="obal-muted obal-hint"><?php esc_html_e( 'Save the order after editing items to refresh the balance.', 'order-balance' ); ?></p>
+		<p class="obal-muted obal-hint"><?php esc_html_e( 'The balance updates when you recalculate or save the order.', 'order-balance' ); ?></p>
 	<?php endif; ?>
 </div>

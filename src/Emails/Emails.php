@@ -11,7 +11,18 @@ defined( 'ABSPATH' ) || exit;
 
 final class Emails implements Module {
 
-	private const SUPPRESSED = array(
+	/**
+	 * WooCommerce emails that stay on for balance payments: a note the store writes to the
+	 * customer on the payment screen.
+	 */
+	private const ALLOWED = array( 'customer_note' );
+
+	/**
+	 * Order emails switched off even when they are missing from the email list: some ids are
+	 * set only while sending (partial refund), some emails are registered only when their
+	 * feature is on (review request, fulfillment, withdrawal, POS).
+	 */
+	private const KNOWN = array(
 		'new_order',
 		'cancelled_order',
 		'failed_order',
@@ -19,17 +30,58 @@ final class Emails implements Module {
 		'customer_processing_order',
 		'customer_completed_order',
 		'customer_refunded_order',
+		'customer_partially_refunded_order',
+		'customer_cancelled_order',
+		'customer_failed_order',
+		'customer_invoice',
+		'customer_review_request',
+		'customer_fulfillment_created',
+		'customer_fulfillment_updated',
+		'customer_fulfillment_deleted',
+		'customer_pos_completed_order',
+		'customer_pos_refunded_order',
+		'order_withdrawal_requested',
+		'customer_order_withdrawal_requested',
 	);
+
+	/** @var array<string, bool> */
+	private $suppressed = array();
 
 	public function __construct( Plugin $plugin ) {}
 
 	public function register( Plugin $plugin ): void {
 		add_filter( 'woocommerce_email_classes', array( $this, 'classes' ) );
+		add_filter( 'woocommerce_email_classes', array( $this, 'suppress_core' ), 999 );
 		add_action( 'obal_payment_paid', array( $this, 'payment_paid' ) );
+	}
 
-		foreach ( self::SUPPRESSED as $id ) {
-			add_filter( 'woocommerce_email_enabled_' . $id, array( $this, 'suppress_for_payments' ), 10, 2 );
+	/**
+	 * Balance payments are orders to WooCommerce, so its own order emails (new order,
+	 * processing, completed, refunded, review request...) would go out for them too. All of
+	 * them are switched off for payments; Order Balance sends its own instead.
+	 */
+	public function suppress_core( array $emails ): array {
+		$ids = self::KNOWN;
+		foreach ( $emails as $email ) {
+			if ( $email instanceof \WC_Email ) {
+				$ids[] = $email->id;
+			}
 		}
+		foreach ( array_unique( $ids ) as $id ) {
+			if ( isset( $this->suppressed[ $id ] ) || 0 === strpos( $id, 'obal_' ) || in_array( $id, self::ALLOWED, true ) ) {
+				continue;
+			}
+			add_filter( 'woocommerce_email_enabled_' . $id, array( $this, 'suppress_for_payments' ), 10, 2 );
+			$this->suppressed[ $id ] = true;
+		}
+		return $emails;
+	}
+
+	/**
+	 * @return string[] WooCommerce email ids switched off for balance payments.
+	 */
+	public function suppressed(): array {
+		return array_keys( $this->suppressed );
 	}
 
 	public function classes( array $emails ): array {

@@ -36,6 +36,8 @@ add_action(
 	}
 );
 
+register_activation_hook( __FILE__, array( \ModwellLabs\OrderBalance\Admin\SetupWizard::class, 'activated' ) );
+
 add_action(
 	'plugins_loaded',
 	static function () {

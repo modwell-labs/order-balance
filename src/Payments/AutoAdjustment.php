@@ -27,7 +27,7 @@ final class AutoAdjustment implements Module {
 		if ( $this->running || ! PaymentRepository::is_parent( $order ) || ! $order->get_id() ) {
 			return;
 		}
-		if ( ! $this->plugin->settings()->enabled( 'auto_rounding' ) || '' === (string) $order->get_meta( BalanceCalculator::INITIAL_META ) ) {
+		if ( ! $this->plugin->settings()->enabled( 'auto_rounding', false ) || '' === (string) $order->get_meta( BalanceCalculator::INITIAL_META ) ) {
 			return;
 		}
 

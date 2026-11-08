@@ -32,6 +32,7 @@ final class PaymentRepository {
 		$item->set_total( wc_format_decimal( $amount ) );
 		$item->set_tax_status( 'none' );
 		$item->set_tax_class( '' );
+		$item->add_meta_data( Payment::BALANCE_LINE_META, 1, true );
 		$payment->add_item( $item );
 
 		$payment->update_meta_data( '_obal_sequence', $this->next_sequence( $parent ) );
@@ -91,13 +92,34 @@ final class PaymentRepository {
 		);
 	}
 
-	public function active_count( \WC_Order $parent ): int {
+	/**
+	 * Payments that use up the per-order limit: paid and not refunded in full.
+	 */
+	public function used_count( \WC_Order $parent ): int {
 		return count(
 			array_filter(
 				$this->for_order( $parent ),
 				static function ( Payment $payment ) {
-					return ! $payment->is_recorded() && ! $payment->has_status( array( 'cancelled', 'failed', 'refunded' ) );
+					return $payment->uses_slot();
 				}
+			)
+		);
+	}
+
+	/**
+	 * Requested payments still waiting to be paid, newest first.
+	 *
+	 * @return Payment[]
+	 */
+	public function waiting( \WC_Order $parent ): array {
+		return array_reverse(
+			array_values(
+				array_filter(
+					$this->for_order( $parent ),
+					static function ( Payment $payment ) {
+						return $payment->is_waiting();
+					}
+				)
 			)
 		);
 	}

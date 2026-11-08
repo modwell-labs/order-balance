@@ -20,11 +20,16 @@ See [readme.txt](readme.txt) for the full description and FAQ.
 
 ## Development
 
-Smoke test, run from the WordPress root of a test site:
+Tests run with WP-CLI from the WordPress root of a test site:
 
 ```
-wp eval-file wp-content/plugins/order-balance/tests/smoke.php
+wp eval-file wp-content/plugins/order-balance/tests/smoke.php [group...]
+wp eval-file wp-content/plugins/order-balance/tests/uninstall.php
 ```
+
+`smoke.php` runs the groups in `tests/groups/`, each independent of the others: `core` (balance, payments, refunds, statuses, emails, rounding), `admin` (payment screen, settings, setup wizard), `later` (pay-later payment methods), `fees` (payment method fees, order change fee, tax) `changes` (the order changes again while a payment is waiting) and `compat` (payment plugins and other plugins finding balance payments; checks for a plugin run only when it is active). With no argument it runs all of them. `uninstall.php` deletes the plugin's data and is destructive on the test site.
+
+Both tests set the plugin to its default settings and put the saved ones back afterwards.
 
 ## License
 

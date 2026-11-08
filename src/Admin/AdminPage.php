@@ -108,7 +108,7 @@ final class AdminPage implements Module {
 		wp_enqueue_style( 'woocommerce_admin_styles' );
 		wp_enqueue_script( 'wc-enhanced-select' );
 		wp_enqueue_style( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.css', array(), ORDER_BALANCE_VERSION );
-		wp_enqueue_script( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.js', array( 'jquery' ), ORDER_BALANCE_VERSION, true );
+		wp_enqueue_script( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.js', array( 'jquery', 'jquery-tiptip' ), ORDER_BALANCE_VERSION, true );
 		wp_localize_script(
 			'obal-admin',
 			'obalAdmin',
@@ -168,14 +168,53 @@ final class AdminPage implements Module {
 		echo '</form>';
 	}
 
+	/**
+	 * The Settings tab holds one page per category (payment methods, rounding, fees...),
+	 * switched with the links under the main tabs.
+	 */
 	private function render_settings(): void {
 		$this->load_settings_api();
+
+		$settings   = $this->plugin->settings();
+		$categories = $settings->categories();
+		$current    = $this->settings_category( isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$links = array();
+		foreach ( $categories as $id => $category ) {
+			$links[] = sprintf(
+				'<li><a href="%1$s"%2$s>%3$s</a>',
+				esc_url( self::url( 'settings', array( 'section' => $id ) ) ),
+				$id === $current ? ' class="current" aria-current="page"' : '',
+				esc_html( $category['label'] )
+			);
+		}
+		echo '<ul class="subsubsub obal-subnav">' . implode( ' |</li>', $links ) . '</li></ul><br class="clear">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		printf(
+			'<p class="obal-setup-link">%1$s <a href="%2$s">%3$s</a></p>',
+			esc_html__( 'New to Order Balance?', 'order-balance' ),
+			esc_url( SetupWizard::url() ),
+			esc_html__( 'Run the setup wizard', 'order-balance' )
+		);
+
 		echo '<form method="post">';
-		\WC_Admin_Settings::output_fields( $this->plugin->settings()->fields() );
+		\WC_Admin_Settings::output_fields( $settings->category_fields( $current ) );
 		wp_nonce_field( self::NONCE );
 		echo '<input type="hidden" name="obal_save" value="settings">';
+		printf( '<input type="hidden" name="obal_category" value="%s">', esc_attr( $current ) );
 		submit_button( __( 'Save changes', 'order-balance' ) );
 		echo '</form>';
+	}
+
+	/**
+	 * A valid settings category: the requested one, or the first.
+	 */
+	public function settings_category( string $requested = '' ): string {
+		$categories = $this->plugin->settings()->categories();
+		if ( isset( $categories[ $requested ] ) ) {
+			return $requested;
+		}
+		return (string) key( $categories );
 	}
 
 	public function save(): void {
@@ -188,25 +227,35 @@ final class AdminPage implements Module {
 		}
 
 		$section = sanitize_key( wp_unslash( $_POST['obal_save'] ) );
+		$args    = array();
 
 		if ( 'settings' === $section ) {
 			$this->load_settings_api();
-			\WC_Admin_Settings::save_fields( $this->plugin->settings()->fields() );
+			$category = $this->settings_category( isset( $_POST['obal_category'] ) ? sanitize_key( wp_unslash( $_POST['obal_category'] ) ) : '' );
+			\WC_Admin_Settings::save_fields( $this->plugin->settings()->category_fields( $category ) );
+			$args['section'] = $category;
 		} elseif ( 'emails' === $section ) {
-			$enabled = isset( $_POST['obal_email'] ) ? array_map( 'sanitize_key', array_keys( (array) wp_unslash( $_POST['obal_email'] ) ) ) : array();
-			foreach ( $this->emails() as $email ) {
-				$option              = 'woocommerce_' . $email->id . '_settings';
-				$settings            = (array) get_option( $option, array() );
-				$settings['enabled'] = in_array( $email->id, $enabled, true ) ? 'yes' : 'no';
-				update_option( $option, $settings );
-			}
+			$this->save_emails();
 		} else {
 			do_action( 'obal_admin_save_' . $section, $this->plugin );
 		}
 
 		self::notice( __( 'Settings saved.', 'order-balance' ) );
-		wp_safe_redirect( self::url( $this->current_tab() ) );
+		wp_safe_redirect( self::url( $this->current_tab(), $args ) );
 		exit;
+	}
+
+	/**
+	 * Saves the email on/off checkboxes posted as obal_email[id]. The caller checks the nonce.
+	 */
+	public function save_emails(): void {
+		$enabled = isset( $_POST['obal_email'] ) ? array_map( 'sanitize_key', array_keys( (array) wp_unslash( $_POST['obal_email'] ) ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		foreach ( $this->emails() as $email ) {
+			$option              = 'woocommerce_' . $email->id . '_settings';
+			$settings            = (array) get_option( $option, array() );
+			$settings['enabled'] = in_array( $email->id, $enabled, true ) ? 'yes' : 'no';
+			update_option( $option, $settings );
+		}
 	}
 
 	/**
@@ -237,7 +286,7 @@ final class AdminPage implements Module {
 		);
 	}
 
-	private function load_settings_api(): void {
+	public function load_settings_api(): void {
 		if ( ! class_exists( 'WC_Admin_Settings', false ) ) {
 			include_once WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
 		}

@@ -26,6 +26,7 @@ final class Ajax implements Module {
 				'request_payment' => array( $this, 'request_payment' ),
 				'refund'          => array( $this, 'refund' ),
 				'adjust'          => array( $this, 'adjust' ),
+				'update_payment'  => array( $this, 'update_payment' ),
 				'resend'          => array( $this, 'resend' ),
 				'record'          => array( $this, 'record' ),
 			)
@@ -39,20 +40,39 @@ final class Ajax implements Module {
 				}
 			);
 		}
+
+		add_action( 'wp_ajax_obal_refresh', array( $this, 'refresh' ) );
 	}
 
-	private function dispatch( callable $callback ): void {
+	/**
+	 * Sends back the Balance box for the order as saved now. The order screen calls it after
+	 * WooCommerce recalculates or saves items, so the box does not need a page reload.
+	 */
+	public function refresh(): void {
+		$order = $this->request_order();
+		wp_send_json_success( array( 'html' => $this->plugin->get( OrderMetabox::class )->html( $order ) ) );
+	}
+
+	/**
+	 * The parent order of an AJAX request, after checking the nonce and the capability.
+	 */
+	private function request_order(): \WC_Order {
 		check_ajax_referer( self::NONCE, 'nonce' );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
 			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'order-balance' ) ), 403 );
 		}
 
-		$order = wc_get_order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+		$order = wc_get_order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( ! PaymentRepository::is_parent( $order ) ) {
 			wp_send_json_error( array( 'message' => __( 'Order not found.', 'order-balance' ) ), 404 );
 		}
 
+		return $order;
+	}
+
+	private function dispatch( callable $callback ): void {
+		$order  = $this->request_order();
 		$result = call_user_func( $callback, $order );
 
 		if ( is_wp_error( $result ) ) {
@@ -79,6 +99,11 @@ final class Ajax implements Module {
 
 	public function refund( \WC_Order $order ) {
 		return $this->plugin->service()->refund( $order );
+	}
+
+	public function update_payment( \WC_Order $order ) {
+		$notify = ! isset( $_POST['notify'] ) || '1' === $_POST['notify']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return $this->plugin->service()->update_waiting( $order, $notify );
 	}
 
 	public function adjust( \WC_Order $order ) {

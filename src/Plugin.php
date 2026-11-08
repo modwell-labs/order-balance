@@ -42,12 +42,15 @@ final class Plugin {
 				Payments\LaterPayments::class,
 				Payments\StatusSync::class,
 				Payments\AutoAdjustment::class,
+				Payments\GatewayLookup::class,
 				Admin\AdminPage::class,
+				Admin\SetupWizard::class,
 				Admin\PaymentScreen::class,
 				Admin\OrderMetabox::class,
 				Admin\Ajax::class,
 				Emails\Emails::class,
 				Frontend\Account::class,
+				Frontend\PayGuard::class,
 			)
 		);
 

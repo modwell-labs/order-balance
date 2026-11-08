@@ -16,7 +16,7 @@ class OrderUpdatedEmail extends \WC_Email {
 		$this->id             = 'obal_order_updated';
 		$this->customer_email = true;
 		$this->title          = __( 'Order updated', 'order-balance' );
-		$this->description    = __( 'Sent to the customer when a paid order changes and a balance payment is requested.', 'order-balance' );
+		$this->description    = __( 'Sent to the customer when a paid order changes and a balance payment is requested or updated.', 'order-balance' );
 		$this->template_base  = ORDER_BALANCE_DIR . 'templates/';
 		$this->template_html  = 'emails/order-updated.php';
 		$this->template_plain = 'emails/plain/order-updated.php';

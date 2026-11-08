@@ -13,6 +13,7 @@ defined( 'ABSPATH' ) || exit;
 final class PaymentScreen implements Module {
 
 	public const ACTION = 'obal_payment_action';
+	public const NOTE   = 'obal_payment_note';
 
 	/** @var Plugin */
 	private $plugin;
@@ -23,6 +24,7 @@ final class PaymentScreen implements Module {
 
 	public function register( Plugin $plugin ): void {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle' ) );
+		add_action( 'admin_post_' . self::NOTE, array( $this, 'add_note' ) );
 		add_filter( 'woocommerce_get_edit_order_url', array( $this, 'edit_url' ), 10, 2 );
 		add_action( 'load-post.php', array( $this, 'redirect_legacy_edit' ) );
 	}
@@ -60,6 +62,30 @@ final class PaymentScreen implements Module {
 				'notes'   => wc_get_order_notes( array( 'order_id' => $payment->get_id() ) ),
 			)
 		);
+	}
+
+	public function add_note(): void {
+		$payment_id = isset( $_POST['payment_id'] ) ? absint( wp_unslash( $_POST['payment_id'] ) ) : 0;
+		check_admin_referer( self::NOTE . '_' . $payment_id );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die( esc_html__( 'You are not allowed to do this.', 'order-balance' ), 403 );
+		}
+
+		$payment = wc_get_order( $payment_id );
+		if ( ! $payment instanceof Payment ) {
+			wp_die( esc_html__( 'Payment not found.', 'order-balance' ), 404 );
+		}
+
+		$note = isset( $_POST['obal_note'] ) ? wp_kses_post( trim( wp_unslash( $_POST['obal_note'] ) ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( '' !== $note ) {
+			$to_customer = ! empty( $_POST['obal_note_customer'] );
+			$payment->add_order_note( $note, $to_customer ? 1 : 0, true );
+			AdminPage::notice( $to_customer ? __( 'Note added and sent to the customer.', 'order-balance' ) : __( 'Note added.', 'order-balance' ) );
+		}
+
+		wp_safe_redirect( AdminPage::payment_url( $payment_id ) );
+		exit;
 	}
 
 	public function handle(): void {

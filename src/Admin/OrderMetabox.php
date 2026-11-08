@@ -38,20 +38,34 @@ final class OrderMetabox implements Module {
 			return;
 		}
 
+		echo $this->html( $order ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the template.
+	}
+
+	/**
+	 * The box content for the order as it is saved now. Also served by the refresh request,
+	 * so the box can follow item edits that WooCommerce makes over AJAX.
+	 */
+	public function html( \WC_Order $order ): string {
 		$service  = $this->plugin->service();
 		$settings = $this->plugin->settings();
 		$modes    = $settings->mode_labels();
 		$mode     = $settings->order_mode( $order );
 
-		Template::render(
+		return Template::html(
 			'admin/metabox.php',
 			array(
 				'order'       => $order,
 				'balance'     => $this->plugin->balance()->for_order( $order ),
 				'payments'    => $this->plugin->payments()->for_order( $order ),
-				'threshold'   => $this->plugin->settings()->threshold(),
+				'threshold'   => $settings->threshold(),
 				'can_request' => $service->can_request( $order ),
 				'max'         => $service->max_payments( $order ),
+				'used'        => $service->used_payments( $order ),
+				'limited'     => $service->is_limited( $order ),
+				'at_limit'    => $service->limit_reached( $order ),
+				'plan'        => $service->waiting_plan( $order ),
+				'waiting'     => $service->waiting_mode( $order ),
+				'last_notice' => $service->last_notice( $order ),
 				'mode_label'  => isset( $modes[ $mode ] ) ? $modes[ $mode ] : '',
 			)
 		);
