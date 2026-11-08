@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 
 $obal_currency = array( 'currency' => $payment->get_currency() );
 
-do_action( 'woocommerce_email_header', $email_heading, $email );
+do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.
 ?>
 
 <?php if ( ! $sent_to_admin ) : ?>
@@ -63,7 +63,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 
 <?php if ( $show_pay_button && $payment->needs_payment() ) : ?>
 	<p>
-		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="display:inline-block;padding:12px 20px;text-decoration:none;font-weight:600;">
+		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="<?php echo esc_attr( \ModwellLabs\OrderBalance\Emails\Emails::button_style() ); ?>">
 			<?php esc_html_e( 'Pay now', 'order-balance' ); ?>
 		</a>
 	</p>
@@ -80,4 +80,4 @@ if ( $additional_content ) {
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
 }
 
-do_action( 'woocommerce_email_footer', $email );
+do_action( 'woocommerce_email_footer', $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.

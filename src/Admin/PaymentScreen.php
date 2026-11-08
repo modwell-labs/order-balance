@@ -102,7 +102,7 @@ final class PaymentScreen implements Module {
 		}
 
 		$name   = isset( $_POST['obal_action'] ) ? sanitize_key( wp_unslash( $_POST['obal_action'] ) ) : '';
-		$input  = isset( $_POST['obal'] ) ? wc_clean( wp_unslash( (array) $_POST['obal'] ) ) : array();
+		$input  = isset( $_POST['obal'] ) ? wc_clean( wp_unslash( (array) $_POST['obal'] ) ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wc_clean() sanitizes every value, nested ones too.
 		$notify = ! empty( $_POST['obal_notify'] );
 		$result = $this->plugin->get( PaymentActions::class )->run( $name, $payment, $input, $notify );
 

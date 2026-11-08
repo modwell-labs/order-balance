@@ -111,4 +111,18 @@ final class Emails implements Module {
 	public function suppress_for_payments( $enabled, $object ) {
 		return $object instanceof Payment ? false : $enabled;
 	}
+
+	/**
+	 * Inline style of the "Pay now" button, in the store's email colour.
+	 */
+	public static function button_style(): string {
+		$base = sanitize_hex_color( (string) get_option( 'woocommerce_email_base_color', '#720eec' ) );
+		$base = $base ? $base : '#720eec';
+		$text = function_exists( 'wc_light_or_dark' ) ? wc_light_or_dark( $base, '#1e1e1e', '#ffffff' ) : '#ffffff';
+		return sprintf(
+			'display:inline-block;padding:12px 24px;border-radius:4px;background-color:%1$s;color:%2$s;text-decoration:none;font-weight:600;',
+			$base,
+			$text
+		);
+	}
 }

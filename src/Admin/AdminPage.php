@@ -249,7 +249,8 @@ final class AdminPage implements Module {
 	 * Saves the email on/off checkboxes posted as obal_email[id]. The caller checks the nonce.
 	 */
 	public function save_emails(): void {
-		$enabled = isset( $_POST['obal_email'] ) ? array_map( 'sanitize_key', array_keys( (array) wp_unslash( $_POST['obal_email'] ) ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$posted  = isset( $_POST['obal_email'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['obal_email'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$enabled = array_map( 'sanitize_key', array_keys( $posted ) );
 		foreach ( $this->emails() as $email ) {
 			$option              = 'woocommerce_' . $email->id . '_settings';
 			$settings            = (array) get_option( $option, array() );

@@ -191,7 +191,7 @@ final class PaymentsTable extends \WP_List_Table {
 			'status'  => '' !== $status ? array( $status ) : array_keys( $this->statuses() ),
 		);
 
-		$search = isset( $_GET['s'] ) ? trim( wc_clean( wp_unslash( $_GET['s'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$search = isset( $_GET['s'] ) ? trim( sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( '' !== $search ) {
 			if ( is_email( $search ) ) {
 				$args['billing_email'] = $search;

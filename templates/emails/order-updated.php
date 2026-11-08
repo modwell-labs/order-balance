@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 $obal_currency    = array( 'currency' => $order->get_currency() );
 $obal_third_party = $payment && 0 !== strcasecmp( $payment->get_billing_email(), $order->get_billing_email() );
 
-do_action( 'woocommerce_email_header', $email_heading, $email );
+do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.
 ?>
 
 <p>
@@ -39,7 +39,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 		?>
 	</p>
 	<p>
-		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="display:inline-block;padding:12px 20px;text-decoration:none;font-weight:600;">
+		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="<?php echo esc_attr( \ModwellLabs\OrderBalance\Emails\Emails::button_style() ); ?>">
 			<?php esc_html_e( 'Pay now', 'order-balance' ); ?>
 		</a>
 	</p>
@@ -47,7 +47,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 
 <?php
 if ( ! $obal_third_party ) {
-	do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email );
+	do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.
 }
 ?>
 
@@ -65,11 +65,11 @@ if ( ! $obal_third_party ) {
 <?php
 do_action( 'obal_email_after_summary', $order, $balance, $plain_text, $email );
 if ( ! $obal_third_party ) {
-	do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email );
+	do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.
 }
 
 if ( $additional_content ) {
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
 }
 
-do_action( 'woocommerce_email_footer', $email );
+do_action( 'woocommerce_email_footer', $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.

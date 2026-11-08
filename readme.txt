@@ -69,6 +69,15 @@ By default balance payments and settings are kept, so you can install the plugin
 
 Yes. Go to WooCommerce > Settings > Emails > Order updated. Templates can be overridden in your theme under `order-balance/`.
 
+== Screenshots ==
+
+1. The Balance panel on the order screen: order total, paid, balance due and the balance payment.
+2. The order changed again while a payment was waiting: update the same payment and pay link.
+3. A balance payment, laid out like a WooCommerce order.
+4. The customer pays the balance with any payment method of the store.
+5. The "Order updated" email with the new total, the amount paid and a pay button.
+6. Settings, grouped by topic, here the rounding of small differences.
+
 == Changelog ==
 
 = 0.1.0 =

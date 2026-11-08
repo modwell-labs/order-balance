@@ -84,6 +84,6 @@ final class PaymentActions {
 
 	public static function send( string $hook, Payment $payment ): void {
 		WC()->mailer();
-		do_action( $hook, $payment->get_id() );
+		do_action( $hook, $payment->get_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- callers pass obal_* email trigger hooks.
 	}
 }
