@@ -1,0 +1,117 @@
+.obal-summary {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 8px;
+}
+
+.obal-summary th,
+.obal-summary td {
+	padding: 4px 0;
+	text-align: left;
+	font-weight: 400;
+}
+
+.obal-summary td {
+	text-align: right;
+}
+
+.obal-due th,
+.obal-due td {
+	border-top: 1px solid #dcdcde;
+	padding-top: 6px;
+	font-weight: 600;
+}
+
+.obal-due.is-owed td {
+	color: #b32d2e;
+}
+
+.obal-due.is-overpaid td {
+	color: #996800;
+}
+
+.obal-payments {
+	margin: 0 0 8px;
+}
+
+.obal-payments li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+
+.obal-payments strong {
+	margin-left: auto;
+}
+
+.obal-status {
+	padding: 0 6px;
+	border-radius: 3px;
+	background: #f0f0f1;
+	font-size: 11px;
+	line-height: 18px;
+}
+
+.obal-status.status-completed,
+.obal-status.status-processing {
+	background: #c6e1c6;
+	color: #2c4700;
+}
+
+.obal-status.status-pending,
+.obal-status.status-on-hold {
+	background: #f8dda7;
+	color: #573b00;
+}
+
+.obal-link-row {
+	display: flex;
+	gap: 8px;
+	width: 100%;
+	font-size: 12px;
+}
+
+.obal-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.obal-actions .button {
+	width: 100%;
+	text-align: center;
+}
+
+.obal-actions input[type="number"] {
+	width: 100%;
+}
+
+.obal-record summary {
+	cursor: pointer;
+	color: #2271b1;
+	margin-bottom: 6px;
+}
+
+.obal-record input {
+	width: 100%;
+	margin-bottom: 6px;
+}
+
+.obal-modes-cell {
+	padding-left: 0;
+}
+
+.obal-modes select {
+	min-width: 280px;
+}
+
+.obal-muted {
+	color: #646970;
+	margin: 4px 0;
+}
+
+.obal-hint {
+	font-size: 11px;
+}
