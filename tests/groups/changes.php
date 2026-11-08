@@ -199,6 +199,22 @@ $o = $add( $o, 'Poster' );
 $service->update_waiting( $o, false );
 $check( 'pay guard: changed amount is stopped', ! \ModwellLabs\OrderBalance\Frontend\PayGuard::matches( wc_get_order( $p->get_id() ), $seen ), array( $seen, \ModwellLabs\OrderBalance\Frontend\PayGuard::fingerprint( wc_get_order( $p->get_id() ) ) ) );
 
+// Express buttons (Stripe Apple Pay, Google Pay, Link) pay through the Store API.
+$guard     = $plugin->get( \ModwellLabs\OrderBalance\Frontend\PayGuard::class );
+$store_req = static function ( int $id, string $seen_total, ?string $key = null ) {
+	$r = new WP_REST_Request( 'POST', '/wc/store/v1/checkout/' . $id );
+	$r->set_param( 'key', null === $key ? wc_get_order( $id )->get_order_key() : $key );
+	$r->set_param( 'extensions', array( 'order-balance' => array( 'seen_total' => $seen_total ) ) );
+	return $r;
+};
+$stopped = $guard->check_store_api( null, array(), $store_req( $p->get_id(), $seen ) );
+$check( 'pay guard: express payment with the old amount is refused', is_wp_error( $stopped ) && 'obal_amount_changed' === $stopped->get_error_code() );
+$check( 'pay guard: says nothing without the payment key', null === $guard->check_store_api( null, array(), $store_req( $p->get_id(), $seen, 'wc_order_wrong' ) ) );
+$now = \ModwellLabs\OrderBalance\Frontend\PayGuard::fingerprint( wc_get_order( $p->get_id() ) );
+$check( 'pay guard: express payment with the shown amount goes on', null === $guard->check_store_api( null, array(), $store_req( $p->get_id(), $now ) ) );
+$check( 'pay guard: other orders are not touched', null === $guard->check_store_api( null, array(), $store_req( $o->get_id(), 'GBP:1.00' ) ) );
+$check( 'pay page: no zero subtotal row for a payment', ! isset( wc_get_order( $p->get_id() )->get_order_item_totals()['cart_subtotal'] ) );
+
 // 10. A manual email and the automatic one never repeat each other.
 update_option( 'obal_waiting_mode', 'auto' );
 update_option( 'obal_waiting_email_delay', '5' );

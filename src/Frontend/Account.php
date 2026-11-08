@@ -22,6 +22,22 @@ final class Account implements Module {
 	public function register( Plugin $plugin ): void {
 		add_action( 'woocommerce_order_details_after_order_table', array( $this, 'render' ) );
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( $this, 'orders_actions' ), 10, 2 );
+		add_filter( 'woocommerce_get_order_item_totals', array( $this, 'item_totals' ), 10, 2 );
+	}
+
+	/**
+	 * A balance payment has no products, so its "Subtotal: 0.00" row says nothing. Hide it
+	 * on the pay page, in the order details and in emails.
+	 *
+	 * @param array<string, array<string, string>> $totals
+	 * @param \WC_Order                              $order
+	 * @return array<string, array<string, string>>
+	 */
+	public function item_totals( $totals, $order ) {
+		if ( is_array( $totals ) && $order instanceof Payment && 0.0 === (float) $order->get_subtotal() ) {
+			unset( $totals['cart_subtotal'] );
+		}
+		return $totals;
 	}
 
 	public function render( $order ): void {
