@@ -36,9 +36,9 @@ final class BalanceCalculator {
 		$requested = 0.0;
 
 		foreach ( $this->plugin->payments()->for_order( $order ) as $payment ) {
-			$paid += $payment->get_net_paid();
+			$paid += $payment->get_credited();
 			if ( $payment->is_open() ) {
-				$requested += (float) $payment->get_total();
+				$requested += $payment->get_amount();
 			}
 		}
 

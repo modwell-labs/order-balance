@@ -29,7 +29,7 @@ When you edit an order that has already been paid, WooCommerce asks the customer
 * Choose which emails are sent: order updated, payment received (customer and store), payment cancelled.
 * Works with High-Performance Order Storage (HPOS) and legacy order storage.
 
-The free version supports one extra payment per order. Order Balance Pro adds unlimited and custom-amount payments, refunds of single payments, changing who pays, combined invoices and payment reminders.
+The free version supports one extra payment per order. Order Balance Pro adds unlimited and custom-amount payments, refunds of single payments, changing who pays, combined invoices, payment reminders and an optional order change fee.
 
 == Frequently Asked Questions ==
 
@@ -40,6 +40,20 @@ No. The free version only works with orders that have already been paid.
 = Where are balance payments stored? =
 
 Each balance payment is a separate order of its own type, linked to the original order. It does not appear in the orders list or in sales reports, so revenue is not counted twice.
+
+= What happens with payment method fees and surcharges? =
+
+If a payment method adds a fee or surcharge to a balance payment, only the requested amount counts toward the order. The fee never makes the order look overpaid. By default a refund returns a matching share of the fee, as card network rules usually require for card surcharges. You can turn this off under Payment fees, and refunds are then limited to the requested amount. Check the rules for your country and payment provider before you charge or keep fees.
+
+= Can I charge a fee for changing an order? =
+
+Order Balance Pro can add an order change fee to balance payments: a fixed amount or a percentage, off by default. It is a separate line on the payment and does not count toward the order. It applies only to orders paid at checkout that were changed afterwards. Orders paid later (cash on delivery, bank transfer, orders created in the admin) and payments you record manually never get a fee. You choose whether the fee is taxed and when it is refunded: with a full refund (default), in proportion, or never.
+
+Check the rules before you charge a fee. In some countries a fee for paying later counts as consumer credit and needs a licence, so describe it as a charge for changing the order. Fees on sales of taxable goods are usually taxable. Consumers who cancel a distance sale may be entitled to a refund of all payments, fees included. Ask your accountant or legal adviser.
+
+= How is tax handled on balance payments? =
+
+Tax is calculated on the order itself. A balance payment pays part of that total, so it carries no tax of its own and tax is not charged twice. If the customer pays a balance payment with store credit or a wallet whose top-ups were already taxed, tax on that part has been collected twice. Ask your accountant how to treat these cases.
 
 = Can I edit the email? =
 

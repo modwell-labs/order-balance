@@ -35,6 +35,7 @@ final class PaymentRepository {
 		$payment->add_item( $item );
 
 		$payment->update_meta_data( '_obal_sequence', $this->next_sequence( $parent ) );
+		$payment->update_meta_data( Payment::AMOUNT_META, wc_format_decimal( $amount ) );
 		$payment->calculate_totals( false );
 		$payment->set_status( 'pending' );
 		$payment->save();

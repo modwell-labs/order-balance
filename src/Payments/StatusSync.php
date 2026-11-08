@@ -72,14 +72,22 @@ final class StatusSync implements Module {
 		$paid = wc_get_is_paid_statuses();
 
 		if ( in_array( $to, $paid, true ) && ! in_array( $from, $paid, true ) ) {
-			$parent->add_order_note(
-				sprintf(
-					/* translators: 1: payment number, 2: amount */
-					__( 'Balance payment #%1$s received: %2$s.', 'order-balance' ),
-					$payment->get_order_number(),
-					wp_strip_all_tags( wc_price( $payment->get_total(), array( 'currency' => $payment->get_currency() ) ) )
-				)
+			$currency = array( 'currency' => $payment->get_currency() );
+			$note     = sprintf(
+				/* translators: 1: payment number, 2: amount */
+				__( 'Balance payment #%1$s received: %2$s.', 'order-balance' ),
+				$payment->get_order_number(),
+				wp_strip_all_tags( wc_price( $payment->get_total(), $currency ) )
 			);
+			if ( $payment->get_fees_part() > 0 ) {
+				$note .= ' ' . sprintf(
+					/* translators: 1: amount credited to the order, 2: fees */
+					__( '%1$s counts toward the balance, %2$s is fees.', 'order-balance' ),
+					wp_strip_all_tags( wc_price( $payment->get_balance_part(), $currency ) ),
+					wp_strip_all_tags( wc_price( $payment->get_fees_part(), $currency ) )
+				);
+			}
+			$parent->add_order_note( $note );
 			do_action( 'obal_payment_paid', $payment, $parent );
 		}
 

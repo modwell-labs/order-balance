@@ -77,6 +77,14 @@ final class Settings implements Module {
 				'options' => $this->paid_status_options(),
 			),
 			array(
+				'id'       => 'obal_refund_payment_fees',
+				'type'     => 'checkbox',
+				'title'    => __( 'Payment fees', 'order-balance' ),
+				'desc'     => __( 'Refund payment fees with the payment, in proportion to the refunded amount', 'order-balance' ),
+				'desc_tip' =>__( 'Fees and surcharges that a payment method adds to a balance payment never count toward the order balance. When this is on, a refund returns a matching share of them (card network rules usually require this for card surcharges). When it is off, refunds are limited to the balance part and the fees are kept. Surcharge and refund rules differ by country and card network, so check them before you keep fees.', 'order-balance' ),
+				'default'  => 'yes',
+			),
+			array(
 				'id'      => 'obal_adjustment_label',
 				'type'    => 'text',
 				'title'   => __( 'Adjustment label', 'order-balance' ),

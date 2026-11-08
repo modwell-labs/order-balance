@@ -30,6 +30,34 @@ $obal_paid     = $payment->get_date_paid();
 		<table class="widefat striped obal-details">
 			<tbody>
 				<tr><th><?php esc_html_e( 'Amount', 'order-balance' ); ?></th><td><strong><?php echo wp_kses_post( wc_price( $payment->get_total(), $obal_currency ) ); ?></strong></td></tr>
+				<?php if ( $payment->get_fees_part() > 0 ) : ?>
+					<tr><th><?php esc_html_e( 'Toward the balance', 'order-balance' ); ?></th><td><?php echo wp_kses_post( wc_price( $payment->get_balance_part(), $obal_currency ) ); ?></td></tr>
+					<?php if ( $payment->get_store_fees() > 0 ) : ?>
+						<tr>
+							<th><?php esc_html_e( 'Store fees', 'order-balance' ); ?></th>
+							<td>
+								<?php echo wp_kses_post( wc_price( $payment->get_store_fees(), $obal_currency ) ); ?>
+								<?php
+								$obal_fee_modes = array(
+									\ModwellLabs\OrderBalance\Payments\Payment::FEE_REFUND_FULL         => __( 'refunded with a full refund', 'order-balance' ),
+									\ModwellLabs\OrderBalance\Payments\Payment::FEE_REFUND_PROPORTIONAL => __( 'refunded in proportion', 'order-balance' ),
+									\ModwellLabs\OrderBalance\Payments\Payment::FEE_REFUND_NEVER        => __( 'not refundable', 'order-balance' ),
+								);
+								?>
+								<span class="description"><?php echo esc_html( $obal_fee_modes[ $payment->get_store_fee_refund_mode() ] ); ?></span>
+							</td>
+						</tr>
+					<?php endif; ?>
+					<?php if ( $payment->get_gateway_fees() > 0 ) : ?>
+						<tr>
+							<th><?php esc_html_e( 'Payment method fees', 'order-balance' ); ?></th>
+							<td>
+								<?php echo wp_kses_post( wc_price( $payment->get_gateway_fees(), $obal_currency ) ); ?>
+								<span class="description"><?php echo esc_html( $payment->refunds_fees() ? __( 'refunded in proportion', 'order-balance' ) : __( 'not refundable', 'order-balance' ) ); ?></span>
+							</td>
+						</tr>
+					<?php endif; ?>
+				<?php endif; ?>
 				<?php if ( $payment->get_total_refunded() > 0 ) : ?>
 					<tr><th><?php esc_html_e( 'Refunded', 'order-balance' ); ?></th><td><?php echo wp_kses_post( wc_price( $payment->get_total_refunded(), $obal_currency ) ); ?></td></tr>
 				<?php endif; ?>
