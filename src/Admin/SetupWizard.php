@@ -108,8 +108,8 @@ final class SetupWizard implements Module {
 		wp_enqueue_style( 'woocommerce_admin_styles' );
 		wp_enqueue_script( 'wc-enhanced-select' );
 		wp_enqueue_script( 'jquery-tiptip' );
-		wp_enqueue_style( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.css', array(), ORDER_BALANCE_VERSION );
-		wp_enqueue_script( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.js', array( 'jquery', 'jquery-tiptip' ), ORDER_BALANCE_VERSION, true );
+		wp_enqueue_style( 'obal-admin', MODWELL_OBAL_URL . 'assets/admin.css', array(), MODWELL_OBAL_VERSION );
+		wp_enqueue_script( 'obal-admin', MODWELL_OBAL_URL . 'assets/admin.js', array( 'jquery', 'jquery-tiptip' ), MODWELL_OBAL_VERSION, true );
 	}
 
 	/**
@@ -133,11 +133,6 @@ final class SetupWizard implements Module {
 				'label'    => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => $this->plugin->settings()->category_sections( 'status' ),
 				'intro'    => __( 'Which status an order has while a balance payment is outstanding, and after it has been paid.', 'modwell-order-balance-for-woocommerce' ),
-			),
-			'changes'  => array(
-				'label'    => __( 'Order changes', 'modwell-order-balance-for-woocommerce' ),
-				'sections' => $this->plugin->settings()->category_sections( 'changes' ),
-				'intro'    => __( 'What happens to a balance payment that is still waiting when the order changes again.', 'modwell-order-balance-for-woocommerce' ),
 			),
 			'rounding' => array(
 				'label'    => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
@@ -165,8 +160,7 @@ final class SetupWizard implements Module {
 
 		$steps = (array) apply_filters( 'obal_setup_steps', $steps );
 
-		// Only sections with something to set count; a section that only explains (such as
-		// "Order changes" in the free version) stays in Settings. Unplaced sections go to "more".
+		// Only sections with something to set count. Unplaced sections go to "more".
 		// Data handling stays in Settings only.
 		$all = array_keys(
 			array_filter(

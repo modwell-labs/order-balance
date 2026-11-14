@@ -66,9 +66,6 @@ $obal_current = (int) array_search( $step, $obal_keys, true );
 			<p class="obal-setup__actions">
 				<a class="button button-primary button-large" href="<?php echo esc_url( $orders ); ?>"><?php esc_html_e( 'Go to orders', 'modwell-order-balance-for-woocommerce' ); ?></a>
 				<a class="button button-large" href="<?php echo esc_url( AdminPage::url( 'settings' ) ); ?>"><?php esc_html_e( 'Open settings', 'modwell-order-balance-for-woocommerce' ); ?></a>
-				<?php if ( apply_filters( 'obal_show_pro_notice', true ) ) : ?>
-					<a class="button button-large" href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Pro is coming: get notified', 'modwell-order-balance-for-woocommerce' ); ?></a>
-				<?php endif; ?>
 			</p>
 
 		<?php else : ?>

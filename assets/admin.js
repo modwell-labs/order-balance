@@ -17,10 +17,6 @@
 			order_id: $button.closest( '.obal-box' ).data( 'order' ),
 		};
 
-		$button.closest( '.obal-box' ).find( '[data-obal-field]' ).each( function () {
-			data[ $( this ).data( 'obal-field' ) ] = $( this ).val();
-		} );
-
 		let $notify = $button.closest( '[data-obal-group]' ).find( '.obal-notify-input' );
 		if ( ! $notify.length ) {
 			$notify = $( '#obal-notify' );
@@ -70,19 +66,12 @@
 			if ( ! $next.length ) {
 				return;
 			}
-			const open = $box.find( 'details' ).map( function () {
-				return this.open;
-			} ).get();
 			const notify = $box.find( '#obal-notify' ).prop( 'checked' );
 			$box.replaceWith( $next );
-			$next.find( 'details' ).each( function ( index ) {
-				if ( open[ index ] ) {
-					this.open = true;
-				}
-			} );
 			if ( false === notify ) {
 				$next.find( '#obal-notify' ).prop( 'checked', false );
 			}
+			$( document ).trigger( 'obal:box-replaced', [ $box, $next ] );
 		} );
 	};
 
@@ -92,6 +81,13 @@
 		}
 		window.clearTimeout( refreshTimer );
 		refreshTimer = window.setTimeout( refreshBalance, 300 );
+	} );
+
+	// Payment screen: confirm actions such as a refund before the form is sent.
+	$( document ).on( 'submit', 'form.obal-action-form[data-confirm]', function ( event ) {
+		if ( ! window.confirm( String( $( this ).data( 'confirm' ) ) ) ) {
+			event.preventDefault();
+		}
 	} );
 
 	// Help tips (the "?" icons): WooCommerce starts them only on its own screens.

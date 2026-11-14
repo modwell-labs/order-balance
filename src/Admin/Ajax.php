@@ -20,27 +20,77 @@ final class Ajax implements Module {
 	}
 
 	public function register( Plugin $plugin ): void {
-		$actions = apply_filters(
-			'obal_admin_actions',
-			array(
-				'request_payment' => array( $this, 'request_payment' ),
-				'refund'          => array( $this, 'refund' ),
-				'adjust'          => array( $this, 'adjust' ),
-				'update_payment'  => array( $this, 'update_payment' ),
-				'resend'          => array( $this, 'resend' ),
-			)
-		);
-
-		foreach ( $actions as $name => $callback ) {
-			add_action(
-				'wp_ajax_obal_' . $name,
-				function () use ( $callback ) {
-					$this->dispatch( $callback );
-				}
-			);
-		}
-
+		add_action( 'wp_ajax_obal_request_payment', array( $this, 'request_payment' ) );
+		add_action( 'wp_ajax_obal_update_payment', array( $this, 'update_payment' ) );
+		add_action( 'wp_ajax_obal_refund', array( $this, 'refund' ) );
+		add_action( 'wp_ajax_obal_adjust', array( $this, 'adjust' ) );
+		add_action( 'wp_ajax_obal_resend', array( $this, 'resend' ) );
 		add_action( 'wp_ajax_obal_refresh', array( $this, 'refresh' ) );
+	}
+
+	/**
+	 * Requests the unrequested balance as a new payment.
+	 */
+	public function request_payment(): void {
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order  = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+		$notify = ! isset( $_POST['notify'] ) || '1' === sanitize_key( wp_unslash( $_POST['notify'] ) );
+
+		$this->respond( $this->plugin->service()->request( $order, $notify ) );
+	}
+
+	/**
+	 * Brings the waiting payment in line with the changed order.
+	 */
+	public function update_payment(): void {
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order  = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+		$notify = ! isset( $_POST['notify'] ) || '1' === sanitize_key( wp_unslash( $_POST['notify'] ) );
+
+		$this->respond( $this->plugin->service()->update_waiting( $order, $notify ) );
+	}
+
+	/**
+	 * Refunds the overpaid amount of the order.
+	 */
+	public function refund(): void {
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+
+		$this->respond( $this->plugin->service()->refund( $order ) );
+	}
+
+	/**
+	 * Absorbs a difference within the rounding threshold.
+	 */
+	public function adjust(): void {
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+
+		$this->respond( $this->plugin->service()->adjust( $order ) );
+	}
+
+	/**
+	 * Sends the "Order updated" email again.
+	 */
+	public function resend(): void {
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+		$open  = $this->plugin->payments()->open( $order );
+		$this->plugin->service()->notify( $order, $open ? end( $open ) : null );
+		$order->add_order_note( __( 'Order update email sent to the customer.', 'modwell-order-balance-for-woocommerce' ) );
+
+		$this->respond( true );
 	}
 
 	/**
@@ -56,23 +106,12 @@ final class Ajax implements Module {
 	}
 
 	/**
-	 * Checks the nonce and the capability, then reads the posted fields and runs the action.
+	 * @param mixed $result A WP_Error, or anything else for success.
 	 */
-	private function dispatch( callable $callback ): void {
-		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
-
-		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
-		$input = array(
-			'notify' => ! isset( $_POST['notify'] ) || '1' === sanitize_key( wp_unslash( $_POST['notify'] ) ),
-		);
-
-		$result = call_user_func( $callback, $order, $input );
-
+	private function respond( $result ): void {
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
-
 		wp_send_json_success();
 	}
 
@@ -88,31 +127,5 @@ final class Ajax implements Module {
 			wp_send_json_error( array( 'message' => __( 'Order not found.', 'modwell-order-balance-for-woocommerce' ) ), 404 );
 		}
 		return $order;
-	}
-
-	/**
-	 * Requests the unrequested balance as a new payment.
-	 */
-	public function request_payment( \WC_Order $order, array $input ) {
-		return $this->plugin->service()->request( $order, $input['notify'] );
-	}
-
-	public function refund( \WC_Order $order ) {
-		return $this->plugin->service()->refund( $order );
-	}
-
-	public function update_payment( \WC_Order $order, array $input ) {
-		return $this->plugin->service()->update_waiting( $order, $input['notify'] );
-	}
-
-	public function adjust( \WC_Order $order ) {
-		return $this->plugin->service()->adjust( $order );
-	}
-
-	public function resend( \WC_Order $order ) {
-		$open = $this->plugin->payments()->open( $order );
-		$this->plugin->service()->notify( $order, $open ? end( $open ) : null );
-		$order->add_order_note( __( 'Order update email sent to the customer.', 'modwell-order-balance-for-woocommerce' ) );
-		return true;
 	}
 }

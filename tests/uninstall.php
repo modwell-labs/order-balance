@@ -121,7 +121,15 @@ $check( 'full: settings removed', false === get_option( 'obal_rounding_threshold
 $check( 'full: email settings removed', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE 'woocommerce\\_obal\\_%'" ) );
 $check( 'full: notes of payments removed', 0 === (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->comments} WHERE comment_post_ID = %d", $payment2_id ) ) );
 $check( 'full: no order meta left', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key LIKE '\\_obal\\_%'" ) );
-$check( 'full: no scheduled actions left', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}actionscheduler_actions WHERE hook LIKE 'obal\\_%'" ) );
+// The free plugin schedules nothing; Pro cancels its own scheduled emails when it is deleted.
+$obal_pro_uninstall = WP_PLUGIN_DIR . '/order-balance-pro/uninstall.php';
+if ( file_exists( $obal_pro_uninstall ) ) {
+	if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+		define( 'WP_UNINSTALL_PLUGIN', 'order-balance-pro/order-balance-pro.php' );
+	}
+	include $obal_pro_uninstall;
+}
+$check( 'full: no scheduled actions left', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}actionscheduler_actions WHERE hook LIKE 'obal\\_%' AND status = 'pending'" ) );
 
 foreach ( $obal_saved_options as $obal_option => $obal_row ) {
 	update_option( $obal_option, maybe_unserialize( $obal_row->option_value ) );

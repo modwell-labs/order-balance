@@ -74,8 +74,8 @@ final class OrderMetabox implements Module {
 			return;
 		}
 
-		wp_enqueue_style( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.css', array(), ORDER_BALANCE_VERSION );
-		wp_enqueue_script( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.js', array( 'jquery' ), ORDER_BALANCE_VERSION, true );
+		wp_enqueue_style( 'obal-admin', MODWELL_OBAL_URL . 'assets/admin.css', array(), MODWELL_OBAL_VERSION );
+		wp_enqueue_script( 'obal-admin', MODWELL_OBAL_URL . 'assets/admin.js', array( 'jquery' ), MODWELL_OBAL_VERSION, true );
 		wp_localize_script(
 			'obal-admin',
 			'obalAdmin',

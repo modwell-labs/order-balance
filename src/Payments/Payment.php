@@ -10,17 +10,10 @@ class Payment extends \WC_Order {
 
 	public const TYPE              = 'obal_payment';
 	public const AMOUNT_META       = '_obal_amount';
-	public const STORE_FEE_META    = '_obal_store_fee';
 	public const BALANCE_LINE_META = '_obal_balance_line';
 
 	public const LINE_BALANCE = 'balance';
-	public const LINE_STORE   = 'store';
 	public const LINE_GATEWAY = 'gateway';
-
-	/** Store fee refund modes, stored on the fee line when it is added. */
-	public const FEE_REFUND_FULL         = 'full';
-	public const FEE_REFUND_PROPORTIONAL = 'proportional';
-	public const FEE_REFUND_NEVER        = 'never';
 
 	public function get_type() {
 		return self::TYPE;
@@ -59,7 +52,7 @@ class Payment extends \WC_Order {
 
 	/**
 	 * Amount this payment settles on the parent order. Charges added on top
-	 * (store fees, payment method fees and their tax) are not part of it.
+	 * (payment method fees and their tax) are not part of it.
 	 */
 	public function get_amount(): float {
 		$amount = (string) $this->get_meta( self::AMOUNT_META );
@@ -75,48 +68,30 @@ class Payment extends \WC_Order {
 	}
 
 	/**
-	 * Everything charged on top of the amount: store fees and payment method fees.
+	 * Everything charged on top of the amount.
 	 */
 	public function get_fees_part(): float {
 		return round( max( 0.0, (float) $this->get_total() - $this->get_amount() ), wc_get_price_decimals() );
 	}
 
 	/**
-	 * Fees the store charges on this payment (fee lines marked with STORE_FEE_META), with their tax.
-	 * They never count toward the order.
-	 */
-	public function get_store_fees(): float {
-		$total = 0.0;
-		foreach ( $this->get_fees() as $fee ) {
-			if ( $fee->get_meta( self::STORE_FEE_META ) ) {
-				$total += (float) $fee->get_total() + (float) $fee->get_total_tax();
-			}
-		}
-		return round( max( 0.0, min( $total, $this->get_fees_part() ) ), wc_get_price_decimals() );
-	}
-
-	/**
-	 * Fees and surcharges added by the payment method.
+	 * Fees and surcharges added by the payment method: everything on top of the amount,
+	 * except lines that another plugin marked as its own kind in obal_payment_line_kinds.
 	 */
 	public function get_gateway_fees(): float {
-		return round( max( 0.0, $this->get_fees_part() - $this->get_store_fees() ), wc_get_price_decimals() );
-	}
-
-	/**
-	 * How store fees are refunded: full (only with a full refund), proportional or never.
-	 */
-	public function get_store_fee_refund_mode(): string {
-		foreach ( $this->get_fees() as $fee ) {
-			$mode = (string) $fee->get_meta( self::STORE_FEE_META );
-			if ( '' !== $mode ) {
-				return in_array( $mode, array( self::FEE_REFUND_FULL, self::FEE_REFUND_PROPORTIONAL ), true ) ? $mode : self::FEE_REFUND_NEVER;
+		$other = 0.0;
+		$fees  = $this->get_fees();
+		foreach ( $this->get_line_kinds() as $id => $kind ) {
+			if ( self::LINE_BALANCE !== $kind && self::LINE_GATEWAY !== $kind && isset( $fees[ $id ] ) ) {
+				$other += (float) $fees[ $id ]->get_total() + (float) $fees[ $id ]->get_total_tax();
 			}
 		}
-		return self::FEE_REFUND_NEVER;
+		$part = $this->get_fees_part();
+		return round( max( 0.0, $part - min( $other, $part ) ), wc_get_price_decimals() );
 	}
 
 	/**
-	 * What each fee line is: the balance line, a store fee or a payment method fee.
+	 * What each fee line is: the balance line or a payment method fee.
 	 * Payments created before lines were marked: the first unmarked line is the balance line.
 	 *
 	 * @return array<int, string> item id => LINE_* constant
@@ -131,16 +106,14 @@ class Payment extends \WC_Order {
 		}
 		$first = true;
 		foreach ( $this->get_fees() as $id => $fee ) {
-			if ( $fee->get_meta( self::STORE_FEE_META ) ) {
-				$kinds[ $id ] = self::LINE_STORE;
-			} elseif ( $marked ? (bool) $fee->get_meta( self::BALANCE_LINE_META ) : $first ) {
+			if ( $marked ? (bool) $fee->get_meta( self::BALANCE_LINE_META ) : $first ) {
 				$kinds[ $id ] = self::LINE_BALANCE;
 				$first        = false;
 			} else {
 				$kinds[ $id ] = self::LINE_GATEWAY;
 			}
 		}
-		return $kinds;
+		return (array) apply_filters( 'obal_payment_line_kinds', $kinds, $this );
 	}
 
 	/**
@@ -154,9 +127,7 @@ class Payment extends \WC_Order {
 	 * Amount credited to the parent order.
 	 *
 	 * Refunds come out of a pool that holds the balance part, plus payment method fees when
-	 * they are refundable, plus store fees in proportional mode. The balance part takes its
-	 * proportional share of each refund. In full mode store fees are refunded only after the
-	 * whole pool, so they come back with a full refund.
+	 * they are refundable. The balance part takes its proportional share of each refund.
 	 */
 	public function get_credited(): float {
 		if ( ! $this->is_paid() ) {
@@ -164,7 +135,7 @@ class Payment extends \WC_Order {
 		}
 
 		$part     = $this->get_balance_part();
-		$pool     = $this->refund_pool();
+		$pool     = $this->get_refund_pool();
 		$refunded = (float) $this->get_total_refunded();
 
 		if ( $refunded <= 0 || $pool <= 0 ) {
@@ -176,32 +147,19 @@ class Payment extends \WC_Order {
 		return round( max( 0.0, $part - $reduction ), wc_get_price_decimals() );
 	}
 
-	/**
-	 * Most that can still be refunded on this payment.
-	 */
-	public function get_refundable(): float {
-		if ( ! $this->is_paid() ) {
-			return 0.0;
-		}
-		$limit = $this->refund_pool();
-		if ( self::FEE_REFUND_FULL === $this->get_store_fee_refund_mode() ) {
-			$limit += $this->get_store_fees();
-		}
-		return round( max( 0.0, $limit - (float) $this->get_total_refunded() ), wc_get_price_decimals() );
-	}
-
 	public function refunds_fees(): bool {
 		return (bool) apply_filters( 'obal_refund_payment_fees', Plugin::instance()->settings()->enabled( 'refund_payment_fees' ), $this );
 	}
 
-	private function refund_pool(): float {
+	/**
+	 * The part of the payment that refunds share in proportion: the balance part, plus payment
+	 * method fees when they are refundable.
+	 */
+	public function get_refund_pool(): float {
 		$pool = $this->get_balance_part();
 		if ( $this->refunds_fees() ) {
 			$pool += $this->get_gateway_fees();
 		}
-		if ( self::FEE_REFUND_PROPORTIONAL === $this->get_store_fee_refund_mode() ) {
-			$pool += $this->get_store_fees();
-		}
-		return $pool;
+		return (float) apply_filters( 'obal_payment_refund_pool', $pool, $this );
 	}
 }

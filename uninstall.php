@@ -128,19 +128,6 @@ if ( ! function_exists( 'obal_uninstall_site' ) ) {
 			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE option_name LIKE %s', $wpdb->options, $wpdb->esc_like( $prefix ) . '%' ) );
 		}
 
-		// Scheduled actions (payment reminders).
-		$actions = $wpdb->prefix . 'actionscheduler_actions';
-		if ( obal_uninstall_table_exists( $actions ) ) {
-			$hook = $wpdb->esc_like( 'obal_' ) . '%';
-			if ( obal_uninstall_table_exists( $wpdb->prefix . 'actionscheduler_logs' ) ) {
-				$wpdb->query( $wpdb->prepare( 'DELETE l FROM %i l INNER JOIN %i a ON a.action_id = l.action_id WHERE a.hook LIKE %s', $wpdb->prefix . 'actionscheduler_logs', $actions, $hook ) );
-			}
-			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE hook LIKE %s', $actions, $hook ) );
-			if ( obal_uninstall_table_exists( $wpdb->prefix . 'actionscheduler_groups' ) ) {
-				$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE slug = %s', $wpdb->prefix . 'actionscheduler_groups', 'order-balance' ) );
-			}
-		}
-
 		wp_cache_flush();
 	}
 }

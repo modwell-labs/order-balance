@@ -49,7 +49,7 @@ final class PayGuard implements Module {
 		if ( ! $payment || ! wp_script_is( 'wp-hooks', 'registered' ) ) {
 			return;
 		}
-		wp_register_script( 'obal-pay-guard', false, array( 'wp-hooks' ), ORDER_BALANCE_VERSION, true );
+		wp_register_script( 'obal-pay-guard', false, array( 'wp-hooks' ), MODWELL_OBAL_VERSION, true );
 		wp_enqueue_script( 'obal-pay-guard' );
 		wp_add_inline_script(
 			'obal-pay-guard',

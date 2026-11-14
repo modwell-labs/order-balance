@@ -18,20 +18,20 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ORDER_BALANCE_VERSION', '0.1.0' );
-define( 'ORDER_BALANCE_FILE', __FILE__ );
-define( 'ORDER_BALANCE_DIR', plugin_dir_path( __FILE__ ) );
-define( 'ORDER_BALANCE_URL', plugin_dir_url( __FILE__ ) );
+define( 'MODWELL_OBAL_VERSION', '0.1.0' );
+define( 'MODWELL_OBAL_FILE', __FILE__ );
+define( 'MODWELL_OBAL_DIR', plugin_dir_path( __FILE__ ) );
+define( 'MODWELL_OBAL_URL', plugin_dir_url( __FILE__ ) );
 
-require_once ORDER_BALANCE_DIR . 'src/Autoloader.php';
-\ModwellLabs\OrderBalance\Autoloader::register( 'ModwellLabs\\OrderBalance\\', ORDER_BALANCE_DIR . 'src/' );
+require_once MODWELL_OBAL_DIR . 'src/Autoloader.php';
+\ModwellLabs\OrderBalance\Autoloader::register( 'ModwellLabs\\OrderBalance\\', MODWELL_OBAL_DIR . 'src/' );
 
 add_action(
 	'before_woocommerce_init',
 	static function () {
 		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', ORDER_BALANCE_FILE, true );
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', ORDER_BALANCE_FILE, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', MODWELL_OBAL_FILE, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', MODWELL_OBAL_FILE, true );
 		}
 	}
 );
@@ -45,6 +45,9 @@ add_action(
 			add_action(
 				'admin_notices',
 				static function () {
+					if ( ! current_user_can( 'activate_plugins' ) ) {
+						return;
+					}
 					echo '<div class="notice notice-error"><p>' . esc_html__( 'Order Balance requires WooCommerce. Install and activate WooCommerce to use it.', 'modwell-order-balance-for-woocommerce' ) . '</p></div>';
 				}
 			);

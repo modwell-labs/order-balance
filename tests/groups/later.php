@@ -23,12 +23,8 @@ $cod = $later_order( 'cod', 'processing' );
 $b   = $plugin->balance()->for_order( $cod );
 $check( 'COD processing is not paid', $b->tracked && 0.0 === $b->paid && 37.0 === $b->due, $b );
 
-$ten  = static function () {
-	return 10.0;
-};
-add_filter( 'obal_record_amount', $ten );
-$cash = $plugin->service()->record( $cod, 'Cash' );
-remove_filter( 'obal_record_amount', $ten );
+// Pro: record part of the balance paid in cash.
+$cash = $plugin->get( 'ModwellLabs\OrderBalancePro\Features\RecordPayment' )->record( $cod, 10.0, 'Cash' );
 $cod  = wc_get_order( $cod->get_id() );
 $b    = $plugin->balance()->for_order( $cod );
 $check( 'record partial cash', $cash instanceof Payment && $cash->is_recorded() && 27.0 === $b->due, is_wp_error( $cash ) ? $cash->get_error_message() : $b );

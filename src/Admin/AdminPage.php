@@ -27,7 +27,7 @@ final class AdminPage implements Module {
 		add_action( 'admin_menu', array( $this, 'menu' ), 60 );
 		add_action( 'admin_init', array( $this, 'save' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( ORDER_BALANCE_FILE ), array( $this, 'action_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( MODWELL_OBAL_FILE ), array( $this, 'action_links' ) );
 	}
 
 	/** A single balance payment. Not a tab of its own: it opens from the order screen. */
@@ -89,9 +89,6 @@ final class AdminPage implements Module {
 			'settings' => __( 'Settings', 'modwell-order-balance-for-woocommerce' ),
 			'emails'   => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
 		);
-		if ( apply_filters( 'obal_show_pro_notice', true ) ) {
-			$tabs['pro'] = __( 'Pro', 'modwell-order-balance-for-woocommerce' );
-		}
 		$tabs['about'] = __( 'About', 'modwell-order-balance-for-woocommerce' );
 
 		return apply_filters( 'obal_admin_tabs', $tabs );
@@ -115,8 +112,8 @@ final class AdminPage implements Module {
 		}
 		wp_enqueue_style( 'woocommerce_admin_styles' );
 		wp_enqueue_script( 'wc-enhanced-select' );
-		wp_enqueue_style( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.css', array(), ORDER_BALANCE_VERSION );
-		wp_enqueue_script( 'obal-admin', ORDER_BALANCE_URL . 'assets/admin.js', array( 'jquery', 'jquery-tiptip' ), ORDER_BALANCE_VERSION, true );
+		wp_enqueue_style( 'obal-admin', MODWELL_OBAL_URL . 'assets/admin.css', array(), MODWELL_OBAL_VERSION );
+		wp_enqueue_script( 'obal-admin', MODWELL_OBAL_URL . 'assets/admin.js', array( 'jquery', 'jquery-tiptip' ), MODWELL_OBAL_VERSION, true );
 		wp_localize_script(
 			'obal-admin',
 			'obalAdmin',
@@ -158,8 +155,6 @@ final class AdminPage implements Module {
 			$this->render_settings();
 		} elseif ( 'emails' === $tab && current_user_can( 'manage_woocommerce' ) ) {
 			Template::render( 'admin/emails.php', array( 'emails' => $this->emails() ) );
-		} elseif ( 'pro' === $tab ) {
-			Template::render( 'admin/pro.php' );
 		} elseif ( 'about' === $tab ) {
 			Template::render( 'admin/about.php', array( 'info' => $this->environment() ) );
 		} else {
@@ -280,7 +275,7 @@ final class AdminPage implements Module {
 		return apply_filters(
 			'obal_about_info',
 			array(
-				__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ) => ORDER_BALANCE_VERSION,
+				__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ) => MODWELL_OBAL_VERSION,
 				__( 'WordPress', 'modwell-order-balance-for-woocommerce' )     => get_bloginfo( 'version' ),
 				__( 'WooCommerce', 'modwell-order-balance-for-woocommerce' )   => defined( 'WC_VERSION' ) ? WC_VERSION : '',
 				__( 'PHP', 'modwell-order-balance-for-woocommerce' )           => PHP_VERSION,

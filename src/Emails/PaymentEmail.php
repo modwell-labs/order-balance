@@ -12,7 +12,7 @@ abstract class PaymentEmail extends \WC_Email {
 	public $payment = null;
 
 	public function __construct() {
-		$this->template_base  = ORDER_BALANCE_DIR . 'templates/';
+		$this->template_base  = MODWELL_OBAL_DIR . 'templates/';
 		$this->template_html  = 'emails/payment-notice.php';
 		$this->template_plain = 'emails/plain/payment-notice.php';
 		$this->placeholders   = array(
@@ -32,10 +32,6 @@ abstract class PaymentEmail extends \WC_Email {
 	abstract protected function hook(): string;
 
 	abstract public function message(): string;
-
-	public function show_pay_button(): bool {
-		return false;
-	}
 
 	public function get_default_additional_content() {
 		return '';
@@ -65,11 +61,11 @@ abstract class PaymentEmail extends \WC_Email {
 	}
 
 	public function get_content_html() {
-		return wc_get_template_html( $this->template_html, $this->args( false ), 'order-balance/', ORDER_BALANCE_DIR . 'templates/' );
+		return wc_get_template_html( $this->template_html, $this->args( false ), 'order-balance/', MODWELL_OBAL_DIR . 'templates/' );
 	}
 
 	public function get_content_plain() {
-		return wc_get_template_html( $this->template_plain, $this->args( true ), 'order-balance/', ORDER_BALANCE_DIR . 'templates/' );
+		return wc_get_template_html( $this->template_plain, $this->args( true ), 'order-balance/', MODWELL_OBAL_DIR . 'templates/' );
 	}
 
 	protected function args( bool $plain ): array {
@@ -77,7 +73,6 @@ abstract class PaymentEmail extends \WC_Email {
 			'order'              => $this->object,
 			'payment'            => $this->payment,
 			'message'            => $this->format_string( $this->message() ),
-			'show_pay_button'    => $this->show_pay_button(),
 			'email_heading'      => $this->get_heading(),
 			'additional_content' => $this->get_additional_content(),
 			'sent_to_admin'      => ! $this->customer_email,

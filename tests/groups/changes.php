@@ -134,7 +134,7 @@ $o    = $add( $new_paid_order(), 'Mug' );
 $p    = $service->request( $o, false );
 $o    = $add( $o, 'Poster' );
 $html = $box( $o );
-$check( 'new: box requests the difference, no update', false !== strpos( $html, 'data-action="request_part"' ) && false === strpos( $html, 'data-action="update_payment"' ) && 12.0 === $amount( $p ) );
+$check( 'new: box requests the difference, no update', false !== strpos( $html, 'data-action="request"' ) && false === strpos( $html, 'data-action="update_payment"' ) && 12.0 === $amount( $p ) );
 $second = $plugin->get( 'ModwellLabs\OrderBalancePro\Features\ParallelPayments' )->request( $o, null, false );
 $check( 'new: second payment for 18', $second instanceof Payment && 18.0 === (float) $second->get_total() );
 $o = $remove( $o, 'Poster' );
@@ -149,11 +149,11 @@ update_option( 'obal_change_fee_amount', '10' );
 update_option( 'obal_change_fee_taxable', 'no' );
 $o = $add( $new_paid_order(), 'Mug' );
 $p = $service->request( $o, false );
-$check( 'fee: 10% of 12', 1.2 === wc_get_order( $p->get_id() )->get_store_fees() );
+$check( 'fee: 10% of 12', 1.2 === \ModwellLabs\OrderBalancePro\Features\OrderChangeFee::fees( wc_get_order( $p->get_id() ) ) );
 $o = $add( $o, 'Poster' );
 $service->update_waiting( $o, false );
 $fp = wc_get_order( $p->get_id() );
-$check( 'fee: 10% of 30 after the update', 30.0 === $fp->get_amount() && 3.0 === $fp->get_store_fees() && 33.0 === (float) $fp->get_total(), array( $fp->get_amount(), $fp->get_store_fees(), $fp->get_total() ) );
+$check( 'fee: 10% of 30 after the update', 30.0 === $fp->get_amount() && 3.0 === \ModwellLabs\OrderBalancePro\Features\OrderChangeFee::fees( $fp ) && 33.0 === (float) $fp->get_total(), array( $fp->get_amount(), \ModwellLabs\OrderBalancePro\Features\OrderChangeFee::fees( $fp ), $fp->get_total() ) );
 
 foreach ( array( 'obal_waiting_mode', 'obal_waiting_email_delay', 'obal_change_fee_type', 'obal_change_fee_amount', 'obal_change_fee_taxable' ) as $obal_option ) {
 	delete_option( $obal_option );
@@ -215,12 +215,12 @@ $check( 'tracking: automatic email scheduled', (bool) as_next_scheduled_action( 
 $obal_mails = array();
 $service->notify( $fresh( $o ), wc_get_order( $p->get_id() ) );
 $o = $fresh( $o );
-$check( 'tracking: a manual send is remembered', $service->already_notified( $o, wc_get_order( $p->get_id() ) ) && 1 === count( $obal_mails ), $obal_mails );
+$check( 'tracking: a manual send is remembered', $plugin->get( 'ModwellLabs\OrderBalancePro\Features\WaitingPayments' )->already_notified( $o, wc_get_order( $p->get_id() ) ) && 1 === count( $obal_mails ), $obal_mails );
 $check( 'tracking: and cancels the scheduled one', ! as_next_scheduled_action( 'obal_pro_waiting_email', $args, 'order-balance' ) );
 do_action( 'obal_pro_waiting_email', $o->get_id() );
 $check( 'tracking: a late automatic run sends nothing more', 1 === count( $obal_mails ), $obal_mails );
 $o = $add( $o, 'Poster' );
-$check( 'tracking: a new amount needs a new email', ! $service->already_notified( $fresh( $o ), wc_get_order( $p->get_id() ) ) );
+$check( 'tracking: a new amount needs a new email', ! $plugin->get( 'ModwellLabs\OrderBalancePro\Features\WaitingPayments' )->already_notified( $fresh( $o ), wc_get_order( $p->get_id() ) ) );
 do_action( 'obal_pro_waiting_email', $o->get_id() );
 $check( 'tracking: so the automatic one goes out', 2 === count( $obal_mails ), $obal_mails );
 $check( 'tracking: box shows the last email', false !== strpos( $box( $o ), 'Last update email:' ) );

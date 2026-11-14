@@ -107,7 +107,6 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 			<?php if ( $balance->unrequested() > 0 && ! ( $obal_show_update && ! $can_request ) ) : ?>
 				<?php if ( $can_request ) : ?>
 					<div class="obal-group obal-request" data-obal-group>
-						<?php do_action( 'obal_metabox_request_fields', $order, $balance ); ?>
 						<label class="obal-notify"><input type="checkbox" id="obal-notify" class="obal-notify-input" checked> <?php esc_html_e( 'Email the customer', 'modwell-order-balance-for-woocommerce' ); ?></label>
 						<button type="button" class="button<?php echo $obal_show_update ? '' : ' button-primary'; ?> obal-action" data-action="request_payment">
 							<?php

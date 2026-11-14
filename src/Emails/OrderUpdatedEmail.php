@@ -17,7 +17,7 @@ class OrderUpdatedEmail extends \WC_Email {
 		$this->customer_email = true;
 		$this->title          = __( 'Order updated', 'modwell-order-balance-for-woocommerce' );
 		$this->description    = __( 'Sent to the customer when a paid order changes and a balance payment is requested or updated.', 'modwell-order-balance-for-woocommerce' );
-		$this->template_base  = ORDER_BALANCE_DIR . 'templates/';
+		$this->template_base  = MODWELL_OBAL_DIR . 'templates/';
 		$this->template_html  = 'emails/order-updated.php';
 		$this->template_plain = 'emails/plain/order-updated.php';
 		$this->placeholders   = array(

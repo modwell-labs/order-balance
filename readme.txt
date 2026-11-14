@@ -32,7 +32,7 @@ When you edit an order that has already been paid, WooCommerce asks the customer
 
 There is no limit on balance payments. While a payment is waiting, further changes to the order update it with one click, so the customer keeps one link and pays once. Once it is paid, a later change can be requested as a new payment.
 
-Order Balance Pro, a separate add-on for stores that change orders often, is in development. Planned features: custom amounts and payments in parts, recording payments made outside the website without a request, in full or in part, a list of all balance payments with filters and bulk actions, automatic updates of waiting payments with one email a few minutes after the last change, refunds of single payments, combined invoices, payment reminders and an optional order change fee. To hear when it is ready, leave your email at [modwelllabs.com/order-balance](https://modwelllabs.com/order-balance/).
+A separate add-on, Order Balance Pro, is in development.
 
 == Frequently Asked Questions ==
 
@@ -48,19 +48,13 @@ Each balance payment is a separate order of its own type, linked to the original
 
 If a payment method adds a fee or surcharge to a balance payment, only the requested amount counts toward the order. The fee never makes the order look overpaid. By default a refund returns a matching share of the fee, as card network rules usually require for card surcharges. You can turn this off under Payment fees, and refunds are then limited to the requested amount. Check the rules for your country and payment provider before you charge or keep fees.
 
-= Can I charge a fee for changing an order? =
-
-Not in the free version. An order change fee is planned for Order Balance Pro, which is in development: a fixed amount or a percentage on balance payments, off by default, for orders paid at checkout only, with a choice of tax and refund rules.
-
-Check the rules before you charge a fee. In some countries a fee for paying later counts as consumer credit and needs a licence, so describe it as a charge for changing the order. Fees on sales of taxable goods are usually taxable. Consumers who cancel a distance sale may be entitled to a refund of all payments, fees included. Ask your accountant or legal adviser.
-
 = How is tax handled on balance payments? =
 
 Tax is calculated on the order itself. A balance payment pays part of that total, so it carries no tax of its own and tax is not charged twice. If the customer pays a balance payment with store credit or a wallet whose top-ups were already taxed, tax on that part has been collected twice. Ask your accountant how to treat these cases.
 
 = What if the order changes again before the customer pays? =
 
-The Balance box shows how the waiting payment would change, for example from 12.00 to 30.00, and updates it with one click. The customer keeps the same pay link. If the order no longer needs the payment, it is cancelled instead. Doing this automatically when the order is recalculated, with one email a few minutes after the last change, is planned for Order Balance Pro.
+The Balance box shows how the waiting payment would change, for example from 12.00 to 30.00, and updates it with one click. The customer keeps the same pay link. If the order no longer needs the payment, it is cancelled instead.
 
 = What happens to my data when I delete the plugin? =
 

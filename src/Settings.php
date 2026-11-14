@@ -64,19 +64,6 @@ final class Settings implements Module {
 				'type' => 'sectionend',
 			),
 			array(
-				'id'    => 'obal_waiting',
-				'type'  => 'title',
-				'title' => __( 'When the order changes again', 'modwell-order-balance-for-woocommerce' ),
-				'desc'  => (string) apply_filters(
-					'obal_waiting_description',
-					__( 'If the order changes while a balance payment is still waiting to be paid, the Balance box offers to update that payment, so the customer keeps one link and pays once. If the order no longer needs it, the payment is cancelled instead. When the payment is paid and the order changes again, you can request the new difference as another payment.', 'modwell-order-balance-for-woocommerce' )
-				),
-			),
-			array(
-				'id'   => 'obal_waiting',
-				'type' => 'sectionend',
-			),
-			array(
 				'id'    => 'obal_rounding',
 				'type'  => 'title',
 				'title' => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
@@ -181,10 +168,6 @@ final class Settings implements Module {
 					'label'    => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_statuses' ),
 				),
-				'changes'  => array(
-					'label'    => __( 'Order changes', 'modwell-order-balance-for-woocommerce' ),
-					'sections' => array( 'obal_waiting' ),
-				),
 				'rounding' => array(
 					'label'    => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
 					'sections' => array( 'obal_rounding' ),
@@ -285,7 +268,7 @@ final class Settings implements Module {
 				self::MODE_CHECKOUT   => __( 'Paid at checkout', 'modwell-order-balance-for-woocommerce' ),
 				self::MODE_PROCESSING => __( 'Paid later: mark paid at Processing', 'modwell-order-balance-for-woocommerce' ),
 				self::MODE_COMPLETED  => __( 'Paid later: mark paid at Completed', 'modwell-order-balance-for-woocommerce' ),
-				self::MODE_MANUAL     => __( 'Paid later: record payments manually', 'modwell-order-balance-for-woocommerce' ),
+				self::MODE_MANUAL     => __( 'Paid later: mark paid by hand', 'modwell-order-balance-for-woocommerce' ),
 			)
 		);
 	}

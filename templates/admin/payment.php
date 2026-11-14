@@ -21,15 +21,12 @@ $obal_format   = get_option( 'date_format' ) . ' ' . get_option( 'time_format' )
 $obal_paid     = $payment->get_date_paid();
 $obal_kinds    = $payment->get_line_kinds();
 $obal_has_tax  = (float) $payment->get_total_tax() > 0;
-$obal_kind_tip = array(
-	Payment::LINE_BALANCE => __( 'Counts toward the order', 'modwell-order-balance-for-woocommerce' ),
-	Payment::LINE_STORE   => __( 'Store fee, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
-	Payment::LINE_GATEWAY => __( 'Added by the payment method, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
-);
-$obal_store_refund = array(
-	Payment::FEE_REFUND_FULL         => __( 'refunded with a full refund', 'modwell-order-balance-for-woocommerce' ),
-	Payment::FEE_REFUND_PROPORTIONAL => __( 'refunded in proportion', 'modwell-order-balance-for-woocommerce' ),
-	Payment::FEE_REFUND_NEVER        => __( 'not refundable', 'modwell-order-balance-for-woocommerce' ),
+$obal_kind_tip = (array) apply_filters(
+	'obal_payment_line_labels',
+	array(
+		Payment::LINE_BALANCE => __( 'Counts toward the order', 'modwell-order-balance-for-woocommerce' ),
+		Payment::LINE_GATEWAY => __( 'Added by the payment method, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
+	)
 );
 $obal_method = $payment->get_payment_method_title();
 ?>
@@ -166,7 +163,7 @@ $obal_method = $payment->get_payment_method_title();
 										<td class="name">
 											<div class="view">
 												<?php echo esc_html( $obal_fee->get_name() ); ?>
-												<span class="obal-line__kind"><?php echo esc_html( $obal_kind_tip[ $obal_kind ] ); ?></span>
+												<span class="obal-line__kind"><?php echo esc_html( isset( $obal_kind_tip[ $obal_kind ] ) ? $obal_kind_tip[ $obal_kind ] : '' ); ?></span>
 											</div>
 										</td>
 										<td class="line_cost" width="1%"><div class="view"><?php echo wp_kses_post( wc_price( $obal_fee->get_total(), $obal_currency ) ); ?></div></td>
@@ -218,13 +215,7 @@ $obal_method = $payment->get_payment_method_title();
 								<td width="1%"></td>
 								<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_balance_part(), $obal_currency ) ); ?></td>
 							</tr>
-							<?php if ( $payment->get_store_fees() > 0 ) : ?>
-								<tr>
-									<td class="label"><?php esc_html_e( 'Store fees:', 'modwell-order-balance-for-woocommerce' ); ?><br><small><?php echo esc_html( $obal_store_refund[ $payment->get_store_fee_refund_mode() ] ); ?></small></td>
-									<td width="1%"></td>
-									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_store_fees(), $obal_currency ) ); ?></td>
-								</tr>
-							<?php endif; ?>
+							<?php do_action( 'obal_payment_totals_rows', $payment ); ?>
 							<?php if ( $payment->get_gateway_fees() > 0 ) : ?>
 								<tr>
 									<td class="label"><?php esc_html_e( 'Payment method fees:', 'modwell-order-balance-for-woocommerce' ); ?><br><small><?php echo esc_html( $payment->refunds_fees() ? __( 'refunded in proportion', 'modwell-order-balance-for-woocommerce' ) : __( 'not refundable', 'modwell-order-balance-for-woocommerce' ) ); ?></small></td>
@@ -322,7 +313,7 @@ $obal_method = $payment->get_payment_method_title();
 			<?php endif; ?>
 
 			<?php foreach ( $actions as $obal_name => $obal_action ) : ?>
-				<form class="postbox obal-action-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"<?php echo ! empty( $obal_action['confirm'] ) ? ' onsubmit="return window.confirm(' . esc_attr( wp_json_encode( $obal_action['confirm'] ) ) . ');"' : ''; ?>>
+				<form class="postbox obal-action-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"<?php echo ! empty( $obal_action['confirm'] ) ? ' data-confirm="' . esc_attr( $obal_action['confirm'] ) . '"' : ''; ?>>
 					<div class="postbox-header"><h2 class="hndle"><?php echo esc_html( $obal_action['label'] ); ?></h2></div>
 					<div class="inside">
 						<?php

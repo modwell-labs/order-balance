@@ -3,7 +3,6 @@
  * @var WC_Order                                  $order
  * @var ModwellLabs\OrderBalance\Payments\Payment $payment
  * @var string                                    $message
- * @var bool                                      $show_pay_button
  * @var string                                    $email_heading
  * @var string                                    $additional_content
  * @var bool                                      $sent_to_admin
@@ -34,10 +33,6 @@ if ( $payment->get_total_refunded() > 0 ) {
 if ( $sent_to_admin ) {
 	echo esc_html__( 'Payer', 'modwell-order-balance-for-woocommerce' ) . ': ' . esc_html( trim( $payment->get_formatted_billing_full_name() . ' ' . $payment->get_billing_email() ) ) . "\n";
 	echo esc_html__( 'View payment', 'modwell-order-balance-for-woocommerce' ) . ': ' . esc_url_raw( $payment->get_edit_order_url() ) . "\n";
-}
-
-if ( $show_pay_button && $payment->needs_payment() ) {
-	echo "\n" . esc_html__( 'Pay now:', 'modwell-order-balance-for-woocommerce' ) . ' ' . esc_url_raw( $payment->get_checkout_payment_url() ) . "\n";
 }
 
 echo "\n";

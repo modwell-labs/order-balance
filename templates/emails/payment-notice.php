@@ -3,7 +3,6 @@
  * @var WC_Order                                  $order
  * @var ModwellLabs\OrderBalance\Payments\Payment $payment
  * @var string                                    $message
- * @var bool                                      $show_pay_button
  * @var string                                    $email_heading
  * @var string                                    $additional_content
  * @var bool                                      $sent_to_admin
@@ -60,14 +59,6 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 		</tr>
 	<?php endif; ?>
 </table>
-
-<?php if ( $show_pay_button && $payment->needs_payment() ) : ?>
-	<p>
-		<a class="button" href="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>" style="<?php echo esc_attr( \ModwellLabs\OrderBalance\Emails\Emails::button_style() ); ?>">
-			<?php esc_html_e( 'Pay now', 'modwell-order-balance-for-woocommerce' ); ?>
-		</a>
-	</p>
-<?php endif; ?>
 
 <?php if ( $sent_to_admin ) : ?>
 	<p><a href="<?php echo esc_url( $payment->get_edit_order_url() ); ?>"><?php esc_html_e( 'View payment', 'modwell-order-balance-for-woocommerce' ); ?></a></p>

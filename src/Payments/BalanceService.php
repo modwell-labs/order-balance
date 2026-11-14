@@ -202,14 +202,9 @@ final class BalanceService {
 			return new \WP_Error( 'obal_waiting', __( 'A balance payment is already waiting. Update it instead of requesting another one.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
-		$available = $balance->unrequested();
-		$amount    = round( (float) apply_filters( 'obal_request_amount', $available, $order ), wc_get_price_decimals() );
-
-		if ( $available <= 0 || $amount <= 0 ) {
+		$amount = round( $balance->unrequested(), wc_get_price_decimals() );
+		if ( $amount <= 0 ) {
 			return new \WP_Error( 'obal_nothing_due', __( 'There is no unrequested balance on this order.', 'modwell-order-balance-for-woocommerce' ) );
-		}
-		if ( $amount > $available ) {
-			return new \WP_Error( 'obal_too_much', __( 'The amount is higher than the unrequested balance.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$this->plugin->settings()->lock_mode( $order );
@@ -237,24 +232,25 @@ final class BalanceService {
 	}
 
 	/**
-	 * Records the balance due as paid outside the website, for example in cash or by bank transfer.
+	 * Records the whole balance due as paid, for an order paid later (for example cash on
+	 * delivery) when it reaches the status set for its payment method.
 	 *
 	 * @return Payment|\WP_Error
 	 */
-	public function record( \WC_Order $order, string $method_title = '', string $transaction_id = '', string $note = '' ) {
+	public function record( \WC_Order $order, string $transaction_id = '', string $note = '' ) {
 		$balance = $this->plugin->balance()->for_order( $order );
-		$amount  = round( (float) apply_filters( 'obal_record_amount', $balance->due, $order ), wc_get_price_decimals() );
+		$amount  = round( $balance->due, wc_get_price_decimals() );
 
 		if ( ! $balance->tracked ) {
 			return new \WP_Error( 'obal_not_tracked', __( 'Payments cannot be recorded for this order.', 'modwell-order-balance-for-woocommerce' ) );
 		}
-		if ( $amount <= 0 || $amount > $balance->due ) {
-			return new \WP_Error( 'obal_record_amount', __( 'The amount must be more than 0 and no more than the balance due.', 'modwell-order-balance-for-woocommerce' ) );
+		if ( $amount <= 0 ) {
+			return new \WP_Error( 'obal_nothing_due', __( 'There is no balance due on this order.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$this->plugin->settings()->lock_mode( $order );
 
-		$title = '' !== $method_title ? $method_title : ( $order->get_payment_method_title() ? $order->get_payment_method_title() : __( 'Manual payment', 'modwell-order-balance-for-woocommerce' ) );
+		$title = $order->get_payment_method_title() ? $order->get_payment_method_title() : __( 'Manual payment', 'modwell-order-balance-for-woocommerce' );
 
 		$payment = $this->plugin->payments()->create(
 			$order,
@@ -286,9 +282,8 @@ final class BalanceService {
 	}
 
 	/**
-	 * Sends the "Order updated" email and remembers what it said: which payment and which
-	 * amount. Scheduled sends check this, so a manual send and an automatic one never repeat
-	 * the same email.
+	 * Sends the "Order updated" email and remembers what it said (payment, amount and time)
+	 * for the line under the Balance box.
 	 */
 	public function notify( \WC_Order $order, ?Payment $payment = null ): void {
 		WC()->mailer();
@@ -320,16 +315,6 @@ final class BalanceService {
 	public function last_notice( \WC_Order $order ): ?array {
 		$notice = $order->get_meta( self::LAST_NOTICE_META );
 		return is_array( $notice ) && isset( $notice['payment'], $notice['amount'], $notice['time'] ) ? $notice : null;
-	}
-
-	/**
-	 * The customer already has an email with this payment at its current amount.
-	 */
-	public function already_notified( \WC_Order $order, Payment $payment ): bool {
-		$notice = $this->last_notice( $order );
-		return $notice
-			&& (int) $notice['payment'] === $payment->get_id()
-			&& wc_format_decimal( $payment->get_total(), wc_get_price_decimals() ) === (string) $notice['amount'];
 	}
 
 	/**
@@ -379,14 +364,14 @@ final class BalanceService {
 	/**
 	 * @return true|\WP_Error
 	 */
-	public function adjust( \WC_Order $order, bool $force = false ) {
+	public function adjust( \WC_Order $order ) {
 		$balance   = $this->plugin->balance()->for_order( $order );
 		$threshold = $this->plugin->settings()->threshold();
 
 		if ( $balance->is_settled() ) {
 			return true;
 		}
-		if ( ! $force && ! $balance->within( $threshold ) ) {
+		if ( ! $balance->within( $threshold ) ) {
 			return new \WP_Error( 'obal_above_threshold', __( 'The difference is above the rounding threshold.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
