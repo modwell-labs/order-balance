@@ -21,12 +21,9 @@ $obal_format   = get_option( 'date_format' ) . ' ' . get_option( 'time_format' )
 $obal_paid     = $payment->get_date_paid();
 $obal_kinds    = $payment->get_line_kinds();
 $obal_has_tax  = (float) $payment->get_total_tax() > 0;
-$obal_kind_tip = (array) apply_filters(
-	'obal_payment_line_labels',
-	array(
-		Payment::LINE_BALANCE => __( 'Counts toward the order', 'modwell-order-balance-for-woocommerce' ),
-		Payment::LINE_GATEWAY => __( 'Added by the payment method, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
-	)
+$obal_kind_tip = array(
+	Payment::LINE_BALANCE => __( 'Counts toward the order', 'modwell-order-balance-for-woocommerce' ),
+	Payment::LINE_GATEWAY => __( 'Added by the payment method, does not count toward the order', 'modwell-order-balance-for-woocommerce' ),
 );
 $obal_method = $payment->get_payment_method_title();
 ?>

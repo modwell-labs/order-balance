@@ -71,7 +71,6 @@
 			if ( false === notify ) {
 				$next.find( '#obal-notify' ).prop( 'checked', false );
 			}
-			$( document ).trigger( 'obal:box-replaced', [ $box, $next ] );
 		} );
 	};
 
@@ -83,7 +82,7 @@
 		refreshTimer = window.setTimeout( refreshBalance, 300 );
 	} );
 
-	// Payment screen: confirm actions such as a refund before the form is sent.
+	// Payment screen: confirm an action before its form is sent.
 	$( document ).on( 'submit', 'form.obal-action-form[data-confirm]', function ( event ) {
 		if ( ! window.confirm( String( $( this ).data( 'confirm' ) ) ) ) {
 			event.preventDefault();

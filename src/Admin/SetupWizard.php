@@ -12,8 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * First-run setup: walks through every settings section, then emails.
  *
- * Steps are built from the settings sections, so sections added by other code (add-ons)
- * appear automatically: known ones are placed by the step map, the rest go to "More options".
+ * Steps are built from the settings sections: each step shows the sections placed on it.
  */
 final class SetupWizard implements Module {
 
@@ -91,7 +90,7 @@ final class SetupWizard implements Module {
 			return;
 		}
 		printf(
-			'<div class="notice notice-info"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a> <a class="button" href="%5$s">%6$s</a></p></div>',
+			'<div class="notice notice-info is-dismissible"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a> <a class="button" href="%5$s">%6$s</a></p></div>',
 			esc_html__( 'Order Balance is installed.', 'modwell-order-balance-for-woocommerce' ),
 			esc_html__( 'Take two minutes to choose how payments, balances and emails work in your store.', 'modwell-order-balance-for-woocommerce' ),
 			esc_url( self::url() ),
@@ -114,7 +113,6 @@ final class SetupWizard implements Module {
 
 	/**
 	 * Step map: step id => label and the settings sections shown on it.
-	 * A section that is not listed lands on the "more" step.
 	 *
 	 * @return array<string, array{label: string, sections?: string[], type?: string, intro?: string}>
 	 */
@@ -148,10 +146,6 @@ final class SetupWizard implements Module {
 				'label' => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
 				'type'  => 'emails',
 			),
-			'more'     => array(
-				'label'    => __( 'More options', 'modwell-order-balance-for-woocommerce' ),
-				'sections' => array(),
-			),
 			'ready'    => array(
 				'label' => __( 'Ready', 'modwell-order-balance-for-woocommerce' ),
 				'type'  => 'ready',
@@ -160,8 +154,7 @@ final class SetupWizard implements Module {
 
 		$steps = (array) apply_filters( 'obal_setup_steps', $steps );
 
-		// Only sections with something to set count. Unplaced sections go to "more".
-		// Data handling stays in Settings only.
+		// Only sections with something to set count. Data handling stays in Settings only.
 		$all = array_keys(
 			array_filter(
 				$this->plugin->settings()->sections(),
@@ -175,13 +168,6 @@ final class SetupWizard implements Module {
 				}
 			)
 		);
-		$placed = array( 'obal_data' );
-		foreach ( $steps as $step ) {
-			$placed = array_merge( $placed, isset( $step['sections'] ) ? $step['sections'] : array() );
-		}
-		if ( isset( $steps['more'] ) ) {
-			$steps['more']['sections'] = array_merge( $steps['more']['sections'], array_values( array_diff( $all, $placed ) ) );
-		}
 
 		// Drop section steps that have nothing to show.
 		return array_filter(
@@ -279,10 +265,6 @@ final class SetupWizard implements Module {
 		$step  = $this->current_step();
 		$steps = $this->steps();
 		$page  = $this->plugin->get( AdminPage::class );
-
-		if ( 'ready' === $step ) {
-			update_option( self::DONE, 'yes', false );
-		}
 
 		$page->load_settings_api();
 

@@ -28,9 +28,6 @@ class Payment extends \WC_Order {
 		return (int) $this->get_meta( '_obal_sequence' );
 	}
 
-	/** Completed by the store because the customer paid in another way. */
-	public const PAID_OUTSIDE_META = '_obal_paid_outside';
-
 	/** The store chose not to email the customer when this payment was paid. */
 	public const NO_EMAIL_META = '_obal_no_email';
 
@@ -75,19 +72,10 @@ class Payment extends \WC_Order {
 	}
 
 	/**
-	 * Fees and surcharges added by the payment method: everything on top of the amount,
-	 * except lines that another plugin marked as its own kind in obal_payment_line_kinds.
+	 * Fees and surcharges added by the payment method: everything on top of the amount.
 	 */
 	public function get_gateway_fees(): float {
-		$other = 0.0;
-		$fees  = $this->get_fees();
-		foreach ( $this->get_line_kinds() as $id => $kind ) {
-			if ( self::LINE_BALANCE !== $kind && self::LINE_GATEWAY !== $kind && isset( $fees[ $id ] ) ) {
-				$other += (float) $fees[ $id ]->get_total() + (float) $fees[ $id ]->get_total_tax();
-			}
-		}
-		$part = $this->get_fees_part();
-		return round( max( 0.0, $part - min( $other, $part ) ), wc_get_price_decimals() );
+		return $this->get_fees_part();
 	}
 
 	/**
@@ -113,7 +101,7 @@ class Payment extends \WC_Order {
 				$kinds[ $id ] = self::LINE_GATEWAY;
 			}
 		}
-		return (array) apply_filters( 'obal_payment_line_kinds', $kinds, $this );
+		return $kinds;
 	}
 
 	/**
@@ -160,6 +148,6 @@ class Payment extends \WC_Order {
 		if ( $this->refunds_fees() ) {
 			$pool += $this->get_gateway_fees();
 		}
-		return (float) apply_filters( 'obal_payment_refund_pool', $pool, $this );
+		return (float) $pool;
 	}
 }

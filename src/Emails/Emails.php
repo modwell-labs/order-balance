@@ -77,13 +77,6 @@ final class Emails implements Module {
 		return $emails;
 	}
 
-	/**
-	 * @return string[] WooCommerce email ids switched off for balance payments.
-	 */
-	public function suppressed(): array {
-		return array_keys( $this->suppressed );
-	}
-
 	public function classes( array $emails ): array {
 		$classes = apply_filters(
 			'obal_email_classes',

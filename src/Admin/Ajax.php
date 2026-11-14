@@ -33,7 +33,9 @@ final class Ajax implements Module {
 	 */
 	public function request_payment(): void {
 		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 
 		$order  = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 		$notify = ! isset( $_POST['notify'] ) || '1' === sanitize_key( wp_unslash( $_POST['notify'] ) );
@@ -46,7 +48,9 @@ final class Ajax implements Module {
 	 */
 	public function update_payment(): void {
 		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 
 		$order  = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 		$notify = ! isset( $_POST['notify'] ) || '1' === sanitize_key( wp_unslash( $_POST['notify'] ) );
@@ -59,7 +63,9 @@ final class Ajax implements Module {
 	 */
 	public function refund(): void {
 		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 
 		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 
@@ -71,7 +77,9 @@ final class Ajax implements Module {
 	 */
 	public function adjust(): void {
 		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 
 		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 
@@ -83,7 +91,9 @@ final class Ajax implements Module {
 	 */
 	public function resend(): void {
 		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 
 		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 		$open  = $this->plugin->payments()->open( $order );
@@ -99,7 +109,9 @@ final class Ajax implements Module {
 	 */
 	public function refresh(): void {
 		check_ajax_referer( self::NONCE, 'nonce' );
-		$this->authorize();
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 
 		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 		wp_send_json_success( array( 'html' => $this->plugin->get( OrderMetabox::class )->html( $order ) ) );
@@ -113,12 +125,6 @@ final class Ajax implements Module {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
 		wp_send_json_success();
-	}
-
-	private function authorize(): void {
-		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
-		}
 	}
 
 	private function order( int $order_id ): \WC_Order {

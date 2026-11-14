@@ -61,8 +61,9 @@ final class BalanceService {
 	}
 
 	/**
-	 * What update_waiting() would do now: payment => [old amount, new amount]. The waiting
-	 * payment takes the whole change; a new amount of zero or less means it is cancelled.
+	 * What update_waiting() would do now: the waiting payment, its old amount and its new amount.
+	 * The waiting payment takes the whole change; a new amount of zero or less means it is
+	 * cancelled. Empty when nothing is waiting or nothing changed.
 	 *
 	 * @return array<int, array{payment: Payment, from: float, to: float}>
 	 */
@@ -78,7 +79,7 @@ final class BalanceService {
 				'to'      => max( 0.0, round( $from + $change, wc_get_price_decimals() ) ),
 			);
 		}
-		return (array) apply_filters( 'obal_waiting_plan', $plan, $order, $change );
+		return $plan;
 	}
 
 	/**

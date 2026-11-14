@@ -93,7 +93,6 @@ final class PaymentActions {
 		$title  = '' !== $method ? $method : __( 'Paid outside the website', 'modwell-order-balance-for-woocommerce' );
 
 		$payment->set_payment_method_title( $title );
-		$payment->update_meta_data( Payment::PAID_OUTSIDE_META, 1 );
 		if ( ! $notify ) {
 			$payment->update_meta_data( Payment::NO_EMAIL_META, 1 );
 		}

@@ -32,7 +32,7 @@ $payment      = $plugin->service()->request( $order );
 $check( 'payment created', $payment instanceof Payment, is_wp_error( $payment ) ? $payment->get_error_message() : '' );
 $order = wc_get_order( $order->get_id() );
 $check( 'parent partially paid', $order->has_status( PaymentType::STATUS ), $order->get_status() );
-$check( 'payment linked both ways', $payment->get_parent_id() === $order->get_id() && in_array( $payment->get_id(), $plugin->payments()->ids( $order ), true ) );
+$check( 'payment linked both ways', $payment->get_parent_id() === $order->get_id() && in_array( $payment->get_id(), array_map( static function ( $p ) { return $p->get_id(); }, $plugin->payments()->for_order( $order ) ), true ) );
 $check( 'payment number', $order->get_order_number() . '-1' === $payment->get_order_number(), $payment->get_order_number() );
 $check( 'order updated email sent', count( $obal_mails ) > $mails_before, $obal_mails );
 $check( 'payment hidden from orders', ! in_array( $payment->get_id(), wc_get_orders( array( 'return' => 'ids', 'limit' => -1 ) ), true ) );

@@ -76,7 +76,7 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 			?>
 			<?php if ( $obal_show_update ) : ?>
 				<div class="obal-group obal-update" data-obal-group>
-					<?php foreach ( $plan as $obal_step ) : ?>
+					<?php $obal_step = $plan[0]; ?>
 						<p class="obal-muted">
 							<?php
 							echo esc_html(
@@ -88,16 +88,15 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 							);
 							?>
 						</p>
-					<?php endforeach; ?>
 					<label class="obal-notify"><input type="checkbox" class="obal-notify-input" checked> <?php esc_html_e( 'Email the customer', 'modwell-order-balance-for-woocommerce' ); ?></label>
 					<button type="button" class="button button-primary obal-action" data-action="update_payment">
 						<?php
 						echo esc_html(
-							count( $plan ) > 1 || $plan[0]['to'] > 0
+							$obal_step['to'] > 0
 								/* translators: %s: payment number */
-								? sprintf( __( 'Update payment #%s', 'modwell-order-balance-for-woocommerce' ), $plan[0]['payment']->get_order_number() )
+								? sprintf( __( 'Update payment #%s', 'modwell-order-balance-for-woocommerce' ), $obal_step['payment']->get_order_number() )
 								/* translators: %s: payment number */
-								: sprintf( __( 'Cancel payment #%s', 'modwell-order-balance-for-woocommerce' ), $plan[0]['payment']->get_order_number() )
+								: sprintf( __( 'Cancel payment #%s', 'modwell-order-balance-for-woocommerce' ), $obal_step['payment']->get_order_number() )
 						);
 						?>
 					</button>

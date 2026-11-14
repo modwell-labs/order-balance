@@ -96,8 +96,8 @@ $check( 'payment screen looks like an order', false !== strpos( $html, 'id="wooc
 
 $wizard = $plugin->get( \ModwellLabs\OrderBalance\Admin\SetupWizard::class );
 $steps  = array_keys( $wizard->steps() );
-$check( 'setup steps', array( 'welcome', 'payments', 'status', 'changes', 'rounding', 'fees', 'emails', 'more', 'ready' ) === $steps, $steps );
-$check( 'setup: pro sections placed', in_array( 'obal_change_fee', $wizard->steps()['fees']['sections'], true ) && in_array( 'obal_reminders', $wizard->steps()['more']['sections'], true ) );
+$check( 'setup steps', array( 'welcome', 'payments', 'status', 'changes', 'rounding', 'fees', 'emails', 'ready' ) === $steps, $steps );
+$check( 'setup: pro sections placed', in_array( 'obal_change_fee', $wizard->steps()['fees']['sections'], true ) );
 $check( 'setup: data not in wizard', ! in_array( 'obal_data', array_merge( ...array_values( array_map( static function ( $s ) { return isset( $s['sections'] ) ? $s['sections'] : array(); }, $wizard->steps() ) ) ), true ) );
 $rounding_ids = wp_list_pluck( $wizard->fields( 'rounding' ), 'id' );
 $status_ids   = wp_list_pluck( $wizard->fields( 'status' ), 'id' );

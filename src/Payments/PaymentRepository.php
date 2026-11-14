@@ -8,8 +8,6 @@ defined( 'ABSPATH' ) || exit;
 
 final class PaymentRepository {
 
-	public const IDS_META = '_obal_payment_ids';
-
 	public function __construct( Plugin $plugin ) {}
 
 	public function create( \WC_Order $parent, float $amount, string $label = '' ): Payment {
@@ -41,9 +39,7 @@ final class PaymentRepository {
 		$payment->set_status( 'pending' );
 		$payment->save();
 
-		$ids   = $this->ids( $parent );
-		$ids[] = $payment->get_id();
-		$parent->update_meta_data( self::IDS_META, array_values( array_unique( $ids ) ) );
+		// Saves what the caller set on the order, such as the mode lock and the request total.
 		$parent->save();
 
 		do_action( 'obal_payment_created', $payment, $parent );
@@ -108,15 +104,6 @@ final class PaymentRepository {
 				)
 			)
 		);
-	}
-
-	public function ids( \WC_Order $parent ): array {
-		$ids = $parent->get_meta( self::IDS_META );
-		return is_array( $ids ) ? array_map( 'absint', $ids ) : array();
-	}
-
-	public static function is_payment( $order ): bool {
-		return $order instanceof Payment;
 	}
 
 	public static function is_parent( $order ): bool {

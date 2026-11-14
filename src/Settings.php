@@ -150,8 +150,8 @@ final class Settings implements Module {
 
 	/**
 	 * Settings categories: the tabs inside the Settings page. Each one lists the settings
-	 * sections it shows. Sections nobody has placed (for example from an add-on) get a category
-	 * of their own, named after the section; data handling always comes last.
+	 * sections it shows. Sections nobody has placed get a category of their own, named after
+	 * the section; data handling always comes last.
 	 *
 	 * @return array<string, array{label: string, sections: string[]}>
 	 */

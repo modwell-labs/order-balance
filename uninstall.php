@@ -5,7 +5,7 @@
  * Always: orders in the plugin's "Partially paid" status move to "On hold", so they stay
  * visible once the status no longer exists.
  * Only with "Delete all data" on: balance payments with their refunds, items and notes,
- * Order Balance meta, settings and scheduled actions are removed.
+ * Order Balance meta and settings are removed.
  *
  * WooCommerce may already be inactive here, so this works on the database directly and
  * covers both order storages (HPOS tables and posts).

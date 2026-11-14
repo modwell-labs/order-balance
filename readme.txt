@@ -38,7 +38,7 @@ A separate add-on, Order Balance Pro, is in development.
 
 = Does it change the checkout? =
 
-No. The free version only works with orders that have already been paid.
+No. Order Balance works after checkout: checkout and the payment methods are not changed.
 
 = Where are balance payments stored? =
 
@@ -58,7 +58,7 @@ The Balance box shows how the waiting payment would change, for example from 12.
 
 = What happens to my data when I delete the plugin? =
 
-By default balance payments and settings are kept, so you can install the plugin again without losing anything. Orders that are "Partially paid" are moved to "On hold" so they stay visible. To remove everything, including balance payments with their refunds and notes, turn on Settings > Data > Delete all data before you delete the plugin. Orders keep their items and totals.
+By default balance payments and settings are kept, so you can install the plugin again without losing anything. Orders that are "Partially paid" are moved to "On hold" so they stay visible. To remove everything, including balance payments with their refunds and notes, turn on Order Balance > Settings > Data > Delete all data before you delete the plugin. Orders keep their items and totals.
 
 = Can I edit the email? =
 
