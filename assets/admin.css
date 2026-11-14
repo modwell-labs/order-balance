@@ -104,17 +104,6 @@
 	margin: 0;
 }
 
-.obal-record summary {
-	cursor: pointer;
-	color: #2271b1;
-	margin-bottom: 6px;
-}
-
-.obal-record input {
-	width: 100%;
-	margin-bottom: 6px;
-}
-
 .obal-subnav {
 	margin: 12px 0 8px;
 }

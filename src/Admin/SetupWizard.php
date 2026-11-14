@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * First-run setup: walks through every settings section, then emails.
  *
- * Steps are built from the settings sections, so sections added by other code (Pro)
+ * Steps are built from the settings sections, so sections added by other code (add-ons)
  * appear automatically: known ones are placed by the step map, the rest go to "More options".
  */
 final class SetupWizard implements Module {
@@ -267,7 +267,7 @@ final class SetupWizard implements Module {
 			$page->load_settings_api();
 			\WC_Admin_Settings::save_fields( $this->fields( $step ) );
 		} elseif ( 'emails' === $type ) {
-			$this->plugin->get( AdminPage::class )->save_emails();
+			$this->plugin->get( AdminPage::class )->save_emails( isset( $_POST['obal_email'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['obal_email'] ) ) : array() );
 		}
 
 		do_action( 'obal_setup_saved', $step, $this->plugin );

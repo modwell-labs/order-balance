@@ -16,7 +16,7 @@ use ModwellLabs\OrderBalance\Payments\Payment;
 $cp = $new_paid_order();
 $cp->add_product( $product( 'Mug' ), 1 );
 $cp->calculate_totals();
-$cpay = wc_get_order( $plugin->service()->request( wc_get_order( $cp->get_id() ), null, false )->get_id() );
+$cpay = wc_get_order( $plugin->service()->request( wc_get_order( $cp->get_id() ), false )->get_id() );
 $cpay->update_meta_data( '_stripe_intent_id', 'pi_obal_' . $cpay->get_id() );
 $cpay->update_meta_data( '_mollie_payment_id', 'tr_obal_' . $cpay->get_id() );
 $cpay->set_transaction_id( 'txn_obal_' . $cpay->get_id() );

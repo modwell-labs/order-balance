@@ -26,11 +26,6 @@ $b     = $plugin->balance()->for_order( $order );
 $check( 'initial paid kept after edit', '25.00' === (string) $order->get_meta( BalanceCalculator::INITIAL_META ) );
 $check( 'balance due 12', 12.0 === $b->due, $b );
 
-$limit = static function () {
-	return false;
-};
-add_filter( 'obal_request_while_open', $limit, 99 );
-
 $status_before = $order->get_status();
 $mails_before  = count( $obal_mails );
 $payment      = $plugin->service()->request( $order );
@@ -47,11 +42,13 @@ $order->calculate_totals();
 $order  = wc_get_order( $order->get_id() );
 $second = $plugin->service()->request( $order );
 $check( 'free: no second payment while one is waiting', is_wp_error( $second ) && 'obal_waiting' === $second->get_error_code(), is_wp_error( $second ) ? $second->get_error_code() : 'created' );
-remove_filter( 'obal_request_while_open', $limit, 99 );
-
-$custom = $plugin->service()->request( $order, 5.0, false );
-$check( 'pro custom amount payment', $custom instanceof Payment && 5.0 === (float) $custom->get_total(), is_wp_error( $custom ) ? $custom->get_error_message() : '' );
-$custom->update_status( 'cancelled' );
+// Pro: another payment while one is waiting, for part of the balance.
+$parallel = 'ModwellLabs\OrderBalancePro\Features\ParallelPayments';
+if ( class_exists( $parallel ) ) {
+	$custom = $plugin->get( $parallel )->request( $order, 5.0, false );
+	$check( 'pro: second payment of 5 while one waits', $custom instanceof Payment && 5.0 === (float) $custom->get_total(), is_wp_error( $custom ) ? $custom->get_error_message() : '' );
+	$custom->update_status( 'cancelled' );
+}
 
 $payment = wc_get_order( $payment->get_id() );
 $payment->payment_complete();
@@ -62,7 +59,7 @@ $check( 'payment completed', $payment->has_status( 'completed' ), $payment->get_
 $check( 'paid 37 after payment', 37.0 === $b->paid, $b );
 $check( 'still owed poster 18', 18.0 === $b->due, $b );
 
-$rest = $plugin->service()->request( $order, null, false );
+$rest = $plugin->service()->request( $order, false );
 wc_get_order( $rest->get_id() )->payment_complete();
 $order = wc_get_order( $order->get_id() );
 $b     = $plugin->balance()->for_order( $order );
@@ -151,7 +148,7 @@ $check( 'invoice renders', false !== strpos( $invoice, 'Refund of overpayment' )
 $other = $new_paid_order();
 $other->add_product( $product( 'Mug' ), 1 );
 $other->calculate_totals();
-$open = $plugin->service()->request( wc_get_order( $other->get_id() ), null, false );
+$open = $plugin->service()->request( wc_get_order( $other->get_id() ), false );
 wc_get_order( $other->get_id() )->update_status( 'cancelled' );
 $check( 'open payment cancelled with parent', wc_get_order( $open->get_id() )->has_status( 'cancelled' ) );
 
@@ -173,7 +170,7 @@ $third = $new_paid_order();
 $third->add_product( $product( 'Hoodie' ), 1 );
 $third->calculate_totals();
 $third = wc_get_order( $third->get_id() );
-$open  = $plugin->service()->request( $third, null, false );
+$open  = $plugin->service()->request( $third, false );
 $names = array_keys( $plugin->actions()->available( $open ) );
 $check( 'open payment actions', array( 'cancel', 'reassign' ) === array_values( array_intersect( array( 'cancel', 'refund', 'reassign' ), $names ) ), $names );
 
@@ -215,7 +212,7 @@ $check( 'refund email sent', $mail_to( 'Refund for your' ), $obal_mails );
 $fourth = $new_paid_order();
 $fourth->add_product( $product( 'Mug' ), 1 );
 $fourth->calculate_totals();
-$cancel_me  = $plugin->service()->request( wc_get_order( $fourth->get_id() ), null, false );
+$cancel_me  = $plugin->service()->request( wc_get_order( $fourth->get_id() ), false );
 $obal_mails = array();
 $result     = $plugin->actions()->run( 'cancel', $cancel_me, array(), true );
 $check( 'cancel action', ! is_wp_error( $result ) && wc_get_order( $cancel_me->get_id() )->has_status( 'cancelled' ) );

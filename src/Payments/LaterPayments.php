@@ -59,7 +59,7 @@ final class LaterPayments implements Module {
 
 		$balance = $this->plugin->balance()->for_order( $order );
 		if ( $balance->is_owed() ) {
-			$this->plugin->service()->record( $order, $balance->due, '', (string) $order->get_transaction_id(), $reason );
+			$this->plugin->service()->record( $order, '', (string) $order->get_transaction_id(), $reason );
 		}
 	}
 }

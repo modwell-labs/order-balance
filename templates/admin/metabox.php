@@ -6,12 +6,10 @@
  * @var float                                            $threshold
  * @var bool                                             $can_request
  * @var array                                            $plan      What updating the waiting payment would do.
- * @var string                                           $waiting   button | auto | new
+ * @var bool                                             $show_update
  * @var array|null                                       $last_notice Last "Order updated" email: payment, amount, time.
  * @var string                                           $mode_label
  */
-
-use ModwellLabs\OrderBalance\Payments\BalanceService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,10 +71,8 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 			<?php endif; ?>
 
 			<?php
-			// The order changed while a payment is waiting. A decrease is always offered here,
-			// because a new payment cannot take money off. In "new" mode an increase becomes
-			// a separate payment instead; in "auto" mode Pro applies it on its own.
-			$obal_show_update = $plan && ( BalanceService::WAITING_BUTTON === $waiting || $plan[0]['to'] < $plan[0]['from'] );
+			// The order changed while a payment is waiting: offer to update that payment.
+			$obal_show_update = $show_update;
 			?>
 			<?php if ( $obal_show_update ) : ?>
 				<div class="obal-group obal-update" data-obal-group>
@@ -120,20 +116,26 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 							?>
 						</button>
 					</div>
-				<?php elseif ( ! $obal_show_update ) : ?>
+				<?php
+				elseif ( ! array_filter(
+					$payments,
+					static function ( $obal_payment ) {
+						return $obal_payment->is_waiting();
+					}
+				) ) :
+					?>
 					<p class="obal-muted"><?php esc_html_e( 'A balance payment is on hold while the payment method confirms it. When it is paid or cancelled, you can request the rest.', 'modwell-order-balance-for-woocommerce' ); ?></p>
 				<?php endif; ?>
 			<?php endif; ?>
 
-			<?php if ( $balance->is_owed() ) : ?>
-				<details class="obal-record">
-					<summary><?php esc_html_e( 'Record a payment received outside the website', 'modwell-order-balance-for-woocommerce' ); ?></summary>
-					<label for="obal-record-amount"><?php esc_html_e( 'Amount', 'modwell-order-balance-for-woocommerce' ); ?></label>
-					<input type="number" id="obal-record-amount" data-obal-field="record_amount" min="0.01" step="0.01" max="<?php echo esc_attr( wc_format_decimal( $balance->due, wc_get_price_decimals() ) ); ?>" value="<?php echo esc_attr( wc_format_decimal( $balance->due, wc_get_price_decimals() ) ); ?>">
-					<label for="obal-record-method"><?php esc_html_e( 'Method', 'modwell-order-balance-for-woocommerce' ); ?></label>
-					<input type="text" id="obal-record-method" data-obal-field="record_method" placeholder="<?php esc_attr_e( 'Cash, bank transfer…', 'modwell-order-balance-for-woocommerce' ); ?>" value="<?php echo esc_attr( $order->get_payment_method_title() ); ?>">
-					<button type="button" class="button obal-action" data-action="record"><?php esc_html_e( 'Record payment', 'modwell-order-balance-for-woocommerce' ); ?></button>
-				</details>
+			<?php
+			$obal_has_open = false;
+			foreach ( $payments as $obal_payment ) {
+				$obal_has_open = $obal_has_open || $obal_payment->is_open();
+			}
+			?>
+			<?php if ( $obal_has_open ) : ?>
+				<p class="obal-muted"><?php esc_html_e( 'Paid outside the website? Open the waiting payment and mark it as paid there.', 'modwell-order-balance-for-woocommerce' ); ?></p>
 			<?php endif; ?>
 
 			<?php if ( $balance->is_overpaid() ) : ?>

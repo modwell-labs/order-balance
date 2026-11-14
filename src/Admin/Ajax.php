@@ -28,7 +28,6 @@ final class Ajax implements Module {
 				'adjust'          => array( $this, 'adjust' ),
 				'update_payment'  => array( $this, 'update_payment' ),
 				'resend'          => array( $this, 'resend' ),
-				'record'          => array( $this, 'record' ),
 			)
 		);
 
@@ -49,31 +48,26 @@ final class Ajax implements Module {
 	 * WooCommerce recalculates or saves items, so the box does not need a page reload.
 	 */
 	public function refresh(): void {
-		$order = $this->request_order();
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
 		wp_send_json_success( array( 'html' => $this->plugin->get( OrderMetabox::class )->html( $order ) ) );
 	}
 
 	/**
-	 * The parent order of an AJAX request, after checking the nonce and the capability.
+	 * Checks the nonce and the capability, then reads the posted fields and runs the action.
 	 */
-	private function request_order(): \WC_Order {
-		check_ajax_referer( self::NONCE, 'nonce' );
-
-		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
-		}
-
-		$order = wc_get_order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! PaymentRepository::is_parent( $order ) ) {
-			wp_send_json_error( array( 'message' => __( 'Order not found.', 'modwell-order-balance-for-woocommerce' ) ), 404 );
-		}
-
-		return $order;
-	}
-
 	private function dispatch( callable $callback ): void {
-		$order  = $this->request_order();
-		$result = call_user_func( $callback, $order );
+		check_ajax_referer( self::NONCE, 'nonce' );
+		$this->authorize();
+
+		$order = $this->order( isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0 );
+		$input = array(
+			'notify' => ! isset( $_POST['notify'] ) || '1' === sanitize_key( wp_unslash( $_POST['notify'] ) ),
+		);
+
+		$result = call_user_func( $callback, $order, $input );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -82,28 +76,33 @@ final class Ajax implements Module {
 		wp_send_json_success();
 	}
 
-	public function request_payment( \WC_Order $order ) {
-		$raw    = isset( $_POST['amount'] ) ? sanitize_text_field( wp_unslash( $_POST['amount'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$amount = '' !== $raw ? (float) wc_format_decimal( $raw ) : null;
-		$notify = ! isset( $_POST['notify'] ) || '1' === $_POST['notify']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-		return $this->plugin->service()->request( $order, $amount, $notify );
+	private function authorize(): void {
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'modwell-order-balance-for-woocommerce' ) ), 403 );
+		}
 	}
 
-	public function record( \WC_Order $order ) {
-		$amount = isset( $_POST['record_amount'] ) ? (float) wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['record_amount'] ) ) ) : 0.0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$method = isset( $_POST['record_method'] ) ? sanitize_text_field( wp_unslash( $_POST['record_method'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	private function order( int $order_id ): \WC_Order {
+		$order = wc_get_order( $order_id );
+		if ( ! PaymentRepository::is_parent( $order ) ) {
+			wp_send_json_error( array( 'message' => __( 'Order not found.', 'modwell-order-balance-for-woocommerce' ) ), 404 );
+		}
+		return $order;
+	}
 
-		return $this->plugin->service()->record( $order, $amount, $method );
+	/**
+	 * Requests the unrequested balance as a new payment.
+	 */
+	public function request_payment( \WC_Order $order, array $input ) {
+		return $this->plugin->service()->request( $order, $input['notify'] );
 	}
 
 	public function refund( \WC_Order $order ) {
 		return $this->plugin->service()->refund( $order );
 	}
 
-	public function update_payment( \WC_Order $order ) {
-		$notify = ! isset( $_POST['notify'] ) || '1' === $_POST['notify']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		return $this->plugin->service()->update_waiting( $order, $notify );
+	public function update_payment( \WC_Order $order, array $input ) {
+		return $this->plugin->service()->update_waiting( $order, $input['notify'] );
 	}
 
 	public function adjust( \WC_Order $order ) {

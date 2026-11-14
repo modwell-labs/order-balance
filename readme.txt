@@ -18,22 +18,21 @@ When you edit an order that has already been paid, WooCommerce asks the customer
 
 * Balance panel on the order screen: order total, paid, balance due or overpaid.
 * Payment method rules: choose which methods count as paid at checkout and which are paid later (cash on delivery, bank transfer, cheque, orders created in the admin). Pay-later orders show the whole total as due until it is paid.
-* Record payments received outside the website, such as cash or a bank transfer, in full or in part.
+* Mark a balance payment as paid when the customer pays it outside the website, such as in cash or by bank transfer. The same payment is completed and its pay link closes.
 * Request the difference: creates a linked balance payment and emails the customer a pay link.
 * Order updated email: the updated order, what has been paid and what is due, in one message.
 * Refund the difference through the original payment method when the order total goes down.
 * Rounding adjustments: absorb a small difference (for example from tax rounding) with one click instead of asking for a payment. You can turn on automatic rounding, which is off by default.
 * Partially paid order status while a balance payment is outstanding.
 * Customers see their balance and a Pay now button in My Account.
-* Payments screen (WooCommerce > Order Balance): every balance payment in one list, with search, status filters and a page of its own where you can cancel it.
 * Choose which emails are sent: order updated, payment received (customer and store), payment cancelled.
 * Setup wizard on first activation walks through every setting in about two minutes.
-* Each balance payment has a screen laid out like a WooCommerce order: details, lines, totals, refunds, actions and notes.
+* Each balance payment has a screen laid out like a WooCommerce order: details, lines, totals, refunds, actions and notes. It opens from the order it belongs to, where you can also cancel it.
 * Works with High-Performance Order Storage (HPOS) and legacy order storage.
 
 There is no limit on balance payments. While a payment is waiting, further changes to the order update it with one click, so the customer keeps one link and pays once. Once it is paid, a later change can be requested as a new payment.
 
-Order Balance Pro, a separate add-on for stores that change orders often, is in development. Planned features: automatic updates of waiting payments with one email a few minutes after the last change, custom amounts and payments in parts, refunds of single payments, combined invoices, payment reminders and an optional order change fee. To hear when it is ready, leave your email at [modwelllabs.com/order-balance](https://modwelllabs.com/order-balance/).
+Order Balance Pro, a separate add-on for stores that change orders often, is in development. Planned features: custom amounts and payments in parts, recording payments made outside the website without a request, in full or in part, a list of all balance payments with filters and bulk actions, automatic updates of waiting payments with one email a few minutes after the last change, refunds of single payments, combined invoices, payment reminders and an optional order change fee. To hear when it is ready, leave your email at [modwelllabs.com/order-balance](https://modwelllabs.com/order-balance/).
 
 == Frequently Asked Questions ==
 

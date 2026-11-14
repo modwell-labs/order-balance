@@ -17,16 +17,7 @@ defined( 'ABSPATH' ) || exit;
 		</table>
 	</div>
 
-	<div class="obal-card">
-		<h2><?php esc_html_e( 'Licence', 'modwell-order-balance-for-woocommerce' ); ?></h2>
-		<?php if ( has_action( 'obal_about_license' ) ) : ?>
-			<?php do_action( 'obal_about_license' ); ?>
-		<?php else : ?>
-			<p><?php esc_html_e( 'You are using the free version: balance payments and pay links, refunds of overpayments, rounding adjustments and order update emails.', 'modwell-order-balance-for-woocommerce' ); ?></p>
-			<p><?php esc_html_e( 'Order Balance Pro is in development. Planned: automatic payment updates, custom amounts and payments in parts, refunds of single payments, combined invoices, payment reminders and an order change fee.', 'modwell-order-balance-for-woocommerce' ); ?></p>
-			<p><a class="button button-primary" href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Get notified when Pro is ready', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
-		<?php endif; ?>
-	</div>
+	<?php do_action( 'obal_about_cards' ); ?>
 
 	<div class="obal-card">
 		<h2><?php esc_html_e( 'Support', 'modwell-order-balance-for-woocommerce' ); ?></h2>

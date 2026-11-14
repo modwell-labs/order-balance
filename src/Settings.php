@@ -69,7 +69,7 @@ final class Settings implements Module {
 				'title' => __( 'When the order changes again', 'modwell-order-balance-for-woocommerce' ),
 				'desc'  => (string) apply_filters(
 					'obal_waiting_description',
-					__( 'If the order changes while a balance payment is still waiting to be paid, the Balance box offers to update that payment, so the customer keeps one link and pays once. If the order no longer needs it, the payment is cancelled instead. When the payment is paid and the order changes again, you can request the new difference as another payment. Automatic updates, with the email sent a few minutes later, are planned for Order Balance Pro, which is in development.', 'modwell-order-balance-for-woocommerce' )
+					__( 'If the order changes while a balance payment is still waiting to be paid, the Balance box offers to update that payment, so the customer keeps one link and pays once. If the order no longer needs it, the payment is cancelled instead. When the payment is paid and the order changes again, you can request the new difference as another payment.', 'modwell-order-balance-for-woocommerce' )
 				),
 			),
 			array(
@@ -163,7 +163,7 @@ final class Settings implements Module {
 
 	/**
 	 * Settings categories: the tabs inside the Settings page. Each one lists the settings
-	 * sections it shows. Sections nobody has placed (for example from Pro) get a category
+	 * sections it shows. Sections nobody has placed (for example from an add-on) get a category
 	 * of their own, named after the section; data handling always comes last.
 	 *
 	 * @return array<string, array{label: string, sections: string[]}>
@@ -191,7 +191,7 @@ final class Settings implements Module {
 				),
 				'fees'     => array(
 					'label'    => __( 'Fees', 'modwell-order-balance-for-woocommerce' ),
-					'sections' => array( 'obal_fees', 'obal_change_fee' ),
+					'sections' => array( 'obal_fees' ),
 				),
 			)
 		);
@@ -223,7 +223,7 @@ final class Settings implements Module {
 			);
 		}
 
-		// Drop categories whose sections do not exist (Pro sections without Pro).
+		// Drop categories whose sections do not exist.
 		return array_filter(
 			$categories,
 			static function ( array $category ) use ( $sections ) {

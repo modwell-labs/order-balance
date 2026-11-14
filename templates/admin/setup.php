@@ -61,12 +61,12 @@ $obal_current = (int) array_search( $step, $obal_keys, true );
 			<ol class="obal-setup__list">
 				<li><?php esc_html_e( 'Edit the order as usual and recalculate it.', 'modwell-order-balance-for-woocommerce' ); ?></li>
 				<li><?php esc_html_e( 'Use the Order Balance box on the order screen to request the difference or refund it.', 'modwell-order-balance-for-woocommerce' ); ?></li>
-				<li><?php esc_html_e( 'The customer gets an email with a pay link. You see every balance payment under Order Balance > Payments.', 'modwell-order-balance-for-woocommerce' ); ?></li>
+				<li><?php esc_html_e( 'The customer gets an email with a pay link. Each balance payment is listed in the Order Balance box of its order.', 'modwell-order-balance-for-woocommerce' ); ?></li>
 			</ol>
 			<p class="obal-setup__actions">
 				<a class="button button-primary button-large" href="<?php echo esc_url( $orders ); ?>"><?php esc_html_e( 'Go to orders', 'modwell-order-balance-for-woocommerce' ); ?></a>
 				<a class="button button-large" href="<?php echo esc_url( AdminPage::url( 'settings' ) ); ?>"><?php esc_html_e( 'Open settings', 'modwell-order-balance-for-woocommerce' ); ?></a>
-				<?php if ( ! has_action( 'obal_about_license' ) ) : ?>
+				<?php if ( apply_filters( 'obal_show_pro_notice', true ) ) : ?>
 					<a class="button button-large" href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Pro is coming: get notified', 'modwell-order-balance-for-woocommerce' ); ?></a>
 				<?php endif; ?>
 			</p>

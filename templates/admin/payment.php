@@ -33,7 +33,12 @@ $obal_store_refund = array(
 );
 $obal_method = $payment->get_payment_method_title();
 ?>
-<p class="obal-back"><a href="<?php echo esc_url( AdminPage::url( 'payments' ) ); ?>">&larr; <?php esc_html_e( 'All payments', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
+<?php if ( $parent ) : ?>
+	<p class="obal-back"><a href="<?php echo esc_url( $parent->get_edit_order_url() ); ?>">&larr; <?php
+	/* translators: %s: order number */
+	printf( esc_html__( 'Order #%s', 'modwell-order-balance-for-woocommerce' ), esc_html( $parent->get_order_number() ) );
+	?></a></p>
+<?php endif; ?>
 
 <div id="poststuff" class="obal-payment-screen">
 	<div id="post-body" class="metabox-holder columns-2">
@@ -229,9 +234,9 @@ $obal_method = $payment->get_payment_method_title();
 							<?php endif; ?>
 							<?php if ( $obal_has_tax ) : ?>
 								<tr>
-									<td class="label"><?php esc_html_e( 'Tax on fees:', 'modwell-order-balance-for-woocommerce' ); ?></td>
+									<td class="label"><small><?php esc_html_e( 'of which tax on fees:', 'modwell-order-balance-for-woocommerce' ); ?></small></td>
 									<td width="1%"></td>
-									<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_total_tax(), $obal_currency ) ); ?></td>
+									<td class="total"><small><?php echo wp_kses_post( wc_price( $payment->get_total_tax(), $obal_currency ) ); ?></small></td>
 								</tr>
 							<?php endif; ?>
 							<tr>

@@ -17,11 +17,6 @@ final class BalanceService {
 	/** The last "Order updated" email: payment, amount, time. */
 	public const LAST_NOTICE_META = '_obal_last_notice';
 
-	/** What happens to a waiting payment when the order changes: button, auto (Pro) or new (Pro). */
-	public const WAITING_BUTTON = 'button';
-	public const WAITING_AUTO   = 'auto';
-	public const WAITING_NEW    = 'new';
-
 	/** @var Plugin */
 	private $plugin;
 
@@ -32,18 +27,18 @@ final class BalanceService {
 	/**
 	 * A new payment can be requested when none is open. While one is waiting, changes to
 	 * the order go into it with update_waiting(), so the customer keeps one pay link.
-	 * Extensions that split the balance into several payments open at once can allow it.
 	 */
 	public function can_request( \WC_Order $order ): bool {
-		if ( ! $this->plugin->payments()->open( $order ) ) {
-			return true;
-		}
-		return (bool) apply_filters( 'obal_request_while_open', false, $order );
+		return ! $this->plugin->payments()->open( $order );
 	}
 
-	public function waiting_mode( \WC_Order $order ): string {
-		$mode = (string) apply_filters( 'obal_waiting_mode', self::WAITING_BUTTON, $order );
-		return in_array( $mode, array( self::WAITING_BUTTON, self::WAITING_AUTO, self::WAITING_NEW ), true ) ? $mode : self::WAITING_BUTTON;
+	/**
+	 * Whether the Balance box offers to bring a waiting payment in line with the changed order.
+	 *
+	 * @param array<int, array{payment: Payment, from: float, to: float}> $plan
+	 */
+	public function offers_update( \WC_Order $order, array $plan ): bool {
+		return $plan && (bool) apply_filters( 'obal_offer_waiting_update', true, $order, $plan );
 	}
 
 	/**
@@ -66,37 +61,29 @@ final class BalanceService {
 	}
 
 	/**
-	 * What update_waiting() would do now: payment => [old amount, new amount]. A new amount of
-	 * zero or less means the payment is cancelled.
+	 * What update_waiting() would do now: payment => [old amount, new amount]. The waiting
+	 * payment takes the whole change; a new amount of zero or less means it is cancelled.
 	 *
 	 * @return array<int, array{payment: Payment, from: float, to: float}>
 	 */
 	public function waiting_plan( \WC_Order $order ): array {
-		$change = $this->waiting_change( $order );
-		$plan   = array();
-		if ( 0.0 === $change ) {
-			return $plan;
-		}
-		foreach ( $this->plugin->payments()->waiting( $order ) as $payment ) {
-			$from   = $payment->get_amount();
-			$to     = round( $from + $change, wc_get_price_decimals() );
+		$change  = $this->waiting_change( $order );
+		$waiting = $this->plugin->payments()->waiting( $order );
+		$plan    = array();
+		if ( 0.0 !== $change && $waiting ) {
+			$from   = $waiting[0]->get_amount();
 			$plan[] = array(
-				'payment' => $payment,
+				'payment' => $waiting[0],
 				'from'    => $from,
-				'to'      => max( 0.0, $to ),
+				'to'      => max( 0.0, round( $from + $change, wc_get_price_decimals() ) ),
 			);
-			if ( $to > 0 ) {
-				break;
-			}
-			// Cancelling this payment covers part of a decrease; the rest goes to the next one.
-			$change = $to;
 		}
-		return $plan;
+		return (array) apply_filters( 'obal_waiting_plan', $plan, $order, $change );
 	}
 
 	/**
-	 * Brings waiting payments in line with the order after it changed: the newest one takes
-	 * the difference, and a payment the order no longer needs is cancelled.
+	 * Brings the waiting payment in line with the order after it changed: it takes the
+	 * difference, or it is cancelled when the order no longer needs it.
 	 *
 	 * The order is saved first: cancelling a payment can change the order status on its own,
 	 * and saving this order object afterwards would undo that.
@@ -201,9 +188,11 @@ final class BalanceService {
 	}
 
 	/**
+	 * Requests the whole unrequested balance as one new payment.
+	 *
 	 * @return Payment|\WP_Error
 	 */
-	public function request( \WC_Order $order, ?float $amount = null, bool $notify = true ) {
+	public function request( \WC_Order $order, bool $notify = true ) {
 		$balance = $this->plugin->balance()->for_order( $order );
 
 		if ( ! $balance->tracked ) {
@@ -214,7 +203,7 @@ final class BalanceService {
 		}
 
 		$available = $balance->unrequested();
-		$amount    = null === $amount ? $available : round( $amount, wc_get_price_decimals() );
+		$amount    = round( (float) apply_filters( 'obal_request_amount', $available, $order ), wc_get_price_decimals() );
 
 		if ( $available <= 0 || $amount <= 0 ) {
 			return new \WP_Error( 'obal_nothing_due', __( 'There is no unrequested balance on this order.', 'modwell-order-balance-for-woocommerce' ) );
@@ -248,17 +237,19 @@ final class BalanceService {
 	}
 
 	/**
+	 * Records the balance due as paid outside the website, for example in cash or by bank transfer.
+	 *
 	 * @return Payment|\WP_Error
 	 */
-	public function record( \WC_Order $order, float $amount, string $method_title = '', string $transaction_id = '', string $note = '' ) {
-		$amount  = round( $amount, wc_get_price_decimals() );
+	public function record( \WC_Order $order, string $method_title = '', string $transaction_id = '', string $note = '' ) {
 		$balance = $this->plugin->balance()->for_order( $order );
+		$amount  = round( (float) apply_filters( 'obal_record_amount', $balance->due, $order ), wc_get_price_decimals() );
 
 		if ( ! $balance->tracked ) {
 			return new \WP_Error( 'obal_not_tracked', __( 'Payments cannot be recorded for this order.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 		if ( $amount <= 0 || $amount > $balance->due ) {
-			return new \WP_Error( 'obal_record_amount', __( 'Enter an amount between 0 and the balance due.', 'modwell-order-balance-for-woocommerce' ) );
+			return new \WP_Error( 'obal_record_amount', __( 'The amount must be more than 0 and no more than the balance due.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
 		$this->plugin->settings()->lock_mode( $order );

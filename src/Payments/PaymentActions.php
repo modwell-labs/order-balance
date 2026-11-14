@@ -23,7 +23,17 @@ final class PaymentActions {
 		return apply_filters(
 			'obal_payment_actions',
 			array(
-				'cancel' => array(
+				'mark_paid' => array(
+					'label'     => __( 'Mark as paid outside the website', 'modwell-order-balance-for-woocommerce' ),
+					'available' => static function ( Payment $payment ) {
+						return $payment->is_open();
+					},
+					'fields'    => array( $this, 'mark_paid_fields' ),
+					'callback'  => array( $this, 'mark_paid' ),
+					'email'     => 'obal_payment_received',
+					'primary'   => true,
+				),
+				'cancel'    => array(
 					'label'     => __( 'Cancel payment', 'modwell-order-balance-for-woocommerce' ),
 					'available' => static function ( Payment $payment ) {
 						return $payment->is_open();
@@ -62,6 +72,40 @@ final class PaymentActions {
 		}
 
 		return $result;
+	}
+
+	public function mark_paid_fields( Payment $payment ): void {
+		printf(
+			'<p><label for="obal-paid-method">%1$s</label><br><input type="text" class="widefat" id="obal-paid-method" name="obal[method]" value="" placeholder="%2$s"></p>',
+			esc_html__( 'How the customer paid', 'modwell-order-balance-for-woocommerce' ),
+			esc_attr__( 'Cash, bank transfer…', 'modwell-order-balance-for-woocommerce' )
+		);
+	}
+
+	/**
+	 * The customer paid this payment in another way, for example in cash. The same payment is
+	 * completed, so its pay link closes and nothing is recorded twice.
+	 *
+	 * @return string|\WP_Error
+	 */
+	public function mark_paid( Payment $payment, array $input = array(), bool $notify = true ) {
+		$method = isset( $input['method'] ) ? sanitize_text_field( (string) $input['method'] ) : '';
+		$title  = '' !== $method ? $method : __( 'Paid outside the website', 'modwell-order-balance-for-woocommerce' );
+
+		$payment->set_payment_method_title( $title );
+		$payment->update_meta_data( Payment::PAID_OUTSIDE_META, 1 );
+		if ( ! $notify ) {
+			$payment->update_meta_data( Payment::NO_EMAIL_META, 1 );
+		}
+		$payment->save();
+
+		$payment->update_status(
+			'completed',
+			/* translators: %s: payment method, for example cash */
+			sprintf( __( 'Marked as paid outside the website by the store (%s).', 'modwell-order-balance-for-woocommerce' ), $title )
+		);
+
+		return __( 'Payment marked as paid.', 'modwell-order-balance-for-woocommerce' );
 	}
 
 	public function cancel( Payment $payment, array $input = array(), bool $notify = true ): string {

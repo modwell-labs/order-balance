@@ -30,12 +30,15 @@ final class AdminPage implements Module {
 		add_filter( 'plugin_action_links_' . plugin_basename( ORDER_BALANCE_FILE ), array( $this, 'action_links' ) );
 	}
 
-	public static function url( string $tab = 'payments', array $args = array() ): string {
+	/** A single balance payment. Not a tab of its own: it opens from the order screen. */
+	public const PAYMENT_VIEW = 'payment';
+
+	public static function url( string $tab = 'settings', array $args = array() ): string {
 		return add_query_arg( array_merge( array( 'page' => self::SLUG, 'tab' => $tab ), $args ), admin_url( 'admin.php' ) );
 	}
 
 	public static function payment_url( int $payment_id ): string {
-		return self::url( 'payments', array( 'payment' => $payment_id ) );
+		return self::url( self::PAYMENT_VIEW, array( 'payment' => $payment_id ) );
 	}
 
 	public static function notice( string $message, string $type = 'success' ): void {
@@ -69,31 +72,36 @@ final class AdminPage implements Module {
 		if ( self::SLUG !== $parent_file && ( ! isset( $_GET['page'] ) || self::SLUG !== $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $submenu_file;
 		}
-		$tab = $this->current_tab();
-		return 'payments' === $tab ? self::SLUG : 'admin.php?page=' . self::SLUG . '&tab=' . $tab;
+		$tab  = $this->current_tab();
+		$tabs = array_keys( $this->tabs() );
+		return ( self::PAYMENT_VIEW === $tab || reset( $tabs ) === $tab ) ? self::SLUG : 'admin.php?page=' . self::SLUG . '&tab=' . $tab;
 	}
 
+	/**
+	 * Runs before the page is sent, so a tab added by other code can process a form and redirect.
+	 */
 	public function load(): void {
-		if ( 'payments' === $this->current_tab() ) {
-			( new PaymentsTable( $this->plugin ) )->process_bulk();
-		}
+		do_action( 'obal_admin_load_' . $this->current_tab(), $this->plugin );
 	}
 
 	public function tabs(): array {
-		return apply_filters(
-			'obal_admin_tabs',
-			array(
-				'payments' => __( 'Payments', 'modwell-order-balance-for-woocommerce' ),
-				'settings' => __( 'Settings', 'modwell-order-balance-for-woocommerce' ),
-				'emails'   => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
-				'about'    => __( 'About', 'modwell-order-balance-for-woocommerce' ),
-			)
+		$tabs = array(
+			'settings' => __( 'Settings', 'modwell-order-balance-for-woocommerce' ),
+			'emails'   => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
 		);
+		if ( apply_filters( 'obal_show_pro_notice', true ) ) {
+			$tabs['pro'] = __( 'Pro', 'modwell-order-balance-for-woocommerce' );
+		}
+		$tabs['about'] = __( 'About', 'modwell-order-balance-for-woocommerce' );
+
+		return apply_filters( 'obal_admin_tabs', $tabs );
 	}
 
 	public function current_tab(): string {
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'payments'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		return array_key_exists( $tab, $this->tabs() ) ? $tab : 'payments';
+		$tabs    = $this->tabs();
+		$default = (string) key( $tabs );
+		$tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : $default; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return ( self::PAYMENT_VIEW === $tab || array_key_exists( $tab, $tabs ) ) ? $tab : $default;
 	}
 
 	public function action_links( array $links ): array {
@@ -140,14 +148,18 @@ final class AdminPage implements Module {
 		}
 		echo '</nav>';
 
-		if ( 'payments' === $tab && $payment instanceof Payment ) {
-			$this->plugin->get( PaymentScreen::class )->render( $payment );
-		} elseif ( 'payments' === $tab ) {
-			$this->render_payments();
+		if ( self::PAYMENT_VIEW === $tab ) {
+			if ( $payment instanceof Payment ) {
+				$this->plugin->get( PaymentScreen::class )->render( $payment );
+			} else {
+				echo '<p>' . esc_html__( 'Payment not found.', 'modwell-order-balance-for-woocommerce' ) . '</p>';
+			}
 		} elseif ( 'settings' === $tab && current_user_can( 'manage_woocommerce' ) ) {
 			$this->render_settings();
 		} elseif ( 'emails' === $tab && current_user_can( 'manage_woocommerce' ) ) {
 			Template::render( 'admin/emails.php', array( 'emails' => $this->emails() ) );
+		} elseif ( 'pro' === $tab ) {
+			Template::render( 'admin/pro.php' );
 		} elseif ( 'about' === $tab ) {
 			Template::render( 'admin/about.php', array( 'info' => $this->environment() ) );
 		} else {
@@ -155,17 +167,6 @@ final class AdminPage implements Module {
 		}
 
 		echo '</div>';
-	}
-
-	private function render_payments(): void {
-		$table = new PaymentsTable( $this->plugin );
-		$table->prepare_items();
-		echo '<form method="get">';
-		printf( '<input type="hidden" name="page" value="%s"><input type="hidden" name="tab" value="payments">', esc_attr( self::SLUG ) );
-		$table->views();
-		$table->search_box( __( 'Search payments', 'modwell-order-balance-for-woocommerce' ), 'obal-payments' );
-		$table->display();
-		echo '</form>';
 	}
 
 	/**
@@ -235,7 +236,7 @@ final class AdminPage implements Module {
 			\WC_Admin_Settings::save_fields( $this->plugin->settings()->category_fields( $category ) );
 			$args['section'] = $category;
 		} elseif ( 'emails' === $section ) {
-			$this->save_emails();
+			$this->save_emails( isset( $_POST['obal_email'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['obal_email'] ) ) : array() );
 		} else {
 			do_action( 'obal_admin_save_' . $section, $this->plugin );
 		}
@@ -246,10 +247,11 @@ final class AdminPage implements Module {
 	}
 
 	/**
-	 * Saves the email on/off checkboxes posted as obal_email[id]. The caller checks the nonce.
+	 * Saves the email on/off checkboxes posted as obal_email[id].
+	 *
+	 * @param array<string, string> $posted Checked emails, keyed by email id.
 	 */
-	public function save_emails(): void {
-		$posted  = isset( $_POST['obal_email'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['obal_email'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	public function save_emails( array $posted ): void {
 		$enabled = array_map( 'sanitize_key', array_keys( $posted ) );
 		foreach ( $this->emails() as $email ) {
 			$option              = 'woocommerce_' . $email->id . '_settings';

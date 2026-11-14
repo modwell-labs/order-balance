@@ -70,12 +70,16 @@
 			if ( ! $next.length ) {
 				return;
 			}
-			const recordOpen = $box.find( 'details.obal-record' ).prop( 'open' );
+			const open = $box.find( 'details' ).map( function () {
+				return this.open;
+			} ).get();
 			const notify = $box.find( '#obal-notify' ).prop( 'checked' );
 			$box.replaceWith( $next );
-			if ( recordOpen ) {
-				$next.find( 'details.obal-record' ).prop( 'open', true );
-			}
+			$next.find( 'details' ).each( function ( index ) {
+				if ( open[ index ] ) {
+					this.open = true;
+				}
+			} );
 			if ( false === notify ) {
 				$next.find( '#obal-notify' ).prop( 'checked', false );
 			}
@@ -102,31 +106,6 @@
 			} );
 		}
 	} );
-
-	// Order change fee: hide the amount, tax and refund rows while "No fee" is selected.
-	const toggleChangeFee = function () {
-		const $type = $( '#obal_change_fee_type' );
-		if ( ! $type.length ) {
-			return;
-		}
-		const off = 'none' === $type.val();
-		[ 'amount', 'label', 'taxable', 'tax_class', 'refund' ].forEach( function ( key ) {
-			$( '#obal_change_fee_' + key ).closest( 'tr' ).toggle( ! off );
-		} );
-		$( '#obal_change_fee_tax_class' ).closest( 'tr' ).toggle( ! off && $( '#obal_change_fee_taxable' ).is( ':checked' ) );
-	};
-	$( document ).on( 'change', '#obal_change_fee_type, #obal_change_fee_taxable', toggleChangeFee );
-	$( toggleChangeFee );
-
-	// Order changes: the email delay only applies to automatic updates.
-	const toggleWaiting = function () {
-		const $mode = $( '#obal_waiting_mode' );
-		if ( $mode.length ) {
-			$( '#obal_waiting_email_delay' ).closest( 'tr' ).toggle( 'auto' === $mode.val() );
-		}
-	};
-	$( document ).on( 'change', '#obal_waiting_mode', toggleWaiting );
-	$( toggleWaiting );
 
 	$( document ).on( 'click', '.obal-copy', function () {
 		const $button = $( this );

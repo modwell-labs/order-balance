@@ -35,6 +35,12 @@ class Payment extends \WC_Order {
 		return (int) $this->get_meta( '_obal_sequence' );
 	}
 
+	/** Completed by the store because the customer paid in another way. */
+	public const PAID_OUTSIDE_META = '_obal_paid_outside';
+
+	/** The store chose not to email the customer when this payment was paid. */
+	public const NO_EMAIL_META = '_obal_no_email';
+
 	public function is_recorded(): bool {
 		return (bool) $this->get_meta( '_obal_recorded' );
 	}

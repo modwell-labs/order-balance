@@ -103,6 +103,9 @@ final class Emails implements Module {
 	}
 
 	public function payment_paid( Payment $payment ): void {
+		if ( $payment->get_meta( Payment::NO_EMAIL_META ) ) {
+			return;
+		}
 		if ( ! $payment->is_recorded() || apply_filters( 'obal_notify_recorded_payments', false, $payment ) ) {
 			PaymentActions::send( 'obal_payment_received_notification', $payment );
 		}

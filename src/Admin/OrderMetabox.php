@@ -47,6 +47,7 @@ final class OrderMetabox implements Module {
 	 */
 	public function html( \WC_Order $order ): string {
 		$service  = $this->plugin->service();
+		$plan     = $service->waiting_plan( $order );
 		$settings = $this->plugin->settings();
 		$modes    = $settings->mode_labels();
 		$mode     = $settings->order_mode( $order );
@@ -59,8 +60,8 @@ final class OrderMetabox implements Module {
 				'payments'    => $this->plugin->payments()->for_order( $order ),
 				'threshold'   => $settings->threshold(),
 				'can_request' => $service->can_request( $order ),
-				'plan'        => $service->waiting_plan( $order ),
-				'waiting'     => $service->waiting_mode( $order ),
+				'plan'        => $plan,
+				'show_update' => $service->offers_update( $order, $plan ),
 				'last_notice' => $service->last_notice( $order ),
 				'mode_label'  => isset( $modes[ $mode ] ) ? $modes[ $mode ] : '',
 			)

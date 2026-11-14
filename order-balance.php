@@ -45,7 +45,7 @@ add_action(
 			add_action(
 				'admin_notices',
 				static function () {
-					echo '<div class="notice notice-error"><p>' . esc_html__( 'Order Balance requires WooCommerce.', 'modwell-order-balance-for-woocommerce' ) . '</p></div>';
+					echo '<div class="notice notice-error"><p>' . esc_html__( 'Order Balance requires WooCommerce. Install and activate WooCommerce to use it.', 'modwell-order-balance-for-woocommerce' ) . '</p></div>';
 				}
 			);
 			return;

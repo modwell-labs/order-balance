@@ -53,7 +53,7 @@ $make = static function () use ( $plugin, $product ) {
 	$order->add_product( $product( 'Mug' ), 1 );
 	$order->calculate_totals();
 
-	$open = $plugin->service()->request( wc_get_order( $order->get_id() ), null, false );
+	$open = $plugin->service()->request( wc_get_order( $order->get_id() ), false );
 	$open->add_order_note( 'Test note' );
 	return array( $order->get_id(), $open->get_id() );
 };

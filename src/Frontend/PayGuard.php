@@ -49,7 +49,8 @@ final class PayGuard implements Module {
 		if ( ! $payment || ! wp_script_is( 'wp-hooks', 'registered' ) ) {
 			return;
 		}
-		wp_register_script( 'obal-pay-guard', false, array( 'wp-hooks' ), ORDER_BALANCE_VERSION, true );		wp_enqueue_script( 'obal-pay-guard' );
+		wp_register_script( 'obal-pay-guard', false, array( 'wp-hooks' ), ORDER_BALANCE_VERSION, true );
+		wp_enqueue_script( 'obal-pay-guard' );
 		wp_add_inline_script(
 			'obal-pay-guard',
 			sprintf(
@@ -134,10 +135,11 @@ final class PayGuard implements Module {
 	 * @param \WC_Order $order
 	 */
 	public function check( $order ): void {
-		if ( ! $order instanceof Payment || ! isset( $_POST[ self::FIELD ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce checked the pay nonce.
+		$nonce = isset( $_POST['woocommerce-pay-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-pay-nonce'] ) ) : '';
+		if ( ! $order instanceof Payment || ! wp_verify_nonce( $nonce, 'woocommerce-pay' ) || ! isset( $_POST[ self::FIELD ] ) ) {
 			return;
 		}
-		$seen = sanitize_text_field( wp_unslash( $_POST[ self::FIELD ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$seen = sanitize_text_field( wp_unslash( $_POST[ self::FIELD ] ) );
 		if ( self::matches( $order, $seen ) ) {
 			return;
 		}

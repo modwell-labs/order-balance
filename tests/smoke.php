@@ -7,6 +7,7 @@
  *   admin  payment screen, settings categories, setup wizard
  *   later  pay-later payment methods (COD, BACS, manual orders)
  *   fees     payment method fees, order change fee, tax on fees
+ *   tax      balance and payments with taxes, prices with and without tax
  *   changes  the order changes again while a payment is waiting
  *   compat   payment plugins and other plugins finding balance payments
  * No argument runs all of them.
@@ -42,7 +43,7 @@ $check = static function ( string $label, bool $ok, $detail = '' ) use ( &$obal_
 $plugin = Plugin::instance();
 
 // Groups to run.
-$obal_all_groups = array( 'core', 'admin', 'later', 'fees', 'changes', 'compat' );
+$obal_all_groups = array( 'core', 'admin', 'later', 'fees', 'tax', 'changes', 'compat' );
 $obal_groups     = isset( $args ) && $args ? array_map( 'strval', $args ) : $obal_all_groups;
 $obal_unknown    = array_diff( $obal_groups, $obal_all_groups );
 if ( $obal_unknown ) {
@@ -57,6 +58,42 @@ $obal_saved_options = $wpdb->get_results( "SELECT option_name, option_value FROM
 foreach ( array_keys( $obal_saved_options ) as $obal_option ) {
 	delete_option( $obal_option );
 }
+
+// The checks use whole prices, so the products are tax free during the run and give the same numbers
+// whether the store charges tax or not. Nothing is saved; the "tax" group lifts this for its own checks.
+$obal_tax_free = static function () {
+	return 'none';
+};
+add_filter( 'woocommerce_product_get_tax_status', $obal_tax_free, 99 );
+add_filter( 'woocommerce_product_variation_get_tax_status', $obal_tax_free, 99 );
+
+// Tax checks insert a rate of their own. While $obal_only_rate is set, it is the only rate in force:
+// WooCommerce applies one rate per priority and class, so a rate of the store could otherwise win.
+$obal_only_rate = null;
+add_filter(
+	'woocommerce_find_rates',
+	static function ( $rates ) use ( &$obal_only_rate ) {
+		if ( null === $obal_only_rate ) {
+			return $rates;
+		}
+		$row = WC_Tax::_get_tax_rate( $obal_only_rate, OBJECT );
+		return $row ? array(
+			(int) $obal_only_rate => array(
+				'rate'     => (float) $row->tax_rate,
+				'label'    => $row->tax_rate_name,
+				'shipping' => $row->tax_rate_shipping ? 'yes' : 'no',
+				'compound' => $row->tax_rate_compound ? 'yes' : 'no',
+			),
+		) : $rates;
+	},
+	99
+);
+
+// The store's own tax settings are put back at the end, whatever the "tax" group changes.
+$obal_saved_tax = array(
+	'woocommerce_calc_taxes'         => get_option( 'woocommerce_calc_taxes' ),
+	'woocommerce_prices_include_tax' => get_option( 'woocommerce_prices_include_tax' ),
+);
 
 $product = function ( string $name ) {
 	$ids = wc_get_products(
@@ -103,6 +140,9 @@ foreach ( $obal_groups as $obal_group ) {
 
 foreach ( $obal_saved_options as $obal_option => $obal_row ) {
 	update_option( $obal_option, maybe_unserialize( $obal_row->option_value ) );
+}
+foreach ( $obal_saved_tax as $obal_option => $obal_value ) {
+	update_option( $obal_option, $obal_value );
 }
 
 echo $obal_failures ? "\n{$obal_failures} FAILED\n" : "\nALL PASSED\n";

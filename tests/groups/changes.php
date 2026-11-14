@@ -50,15 +50,9 @@ $amount  = static function ( $payment ): float {
 	return (float) wc_get_order( $payment->get_id() )->get_total();
 };
 
-// Free version: one payment open at a time (Pro opens several at once).
-$free = static function () {
-	return false;
-};
-add_filter( 'obal_request_while_open', $free, 99 );
-
 // 1. The waiting payment grows with the order.
 $o = $add( $new_paid_order(), 'Mug' );
-$p = $service->request( $o, null, false );
+$p = $service->request( $o, false );
 $check( 'free: no payment counter in the box', false === strpos( $box( $o ), 'Balance payments:' ) );
 $o = $add( $o, 'Poster' );
 $check( 'change since the request is +18', 18.0 === $service->waiting_change( $o ), $service->waiting_change( $o ) );
@@ -87,27 +81,26 @@ $check( 'cancel: a payment can be requested again', $service->can_request( $o ) 
 
 // 4. No limit: once a payment is paid, the next change is requested as a new payment.
 $o = $add( $new_paid_order(), 'Mug' );
-$p = $service->request( $o, null, false );
+$p = $service->request( $o, false );
 wc_get_order( $p->get_id() )->payment_complete();
 $o = $add( $o, 'Poster' );
 $check( 'paid: a new payment can be requested', $service->can_request( $o ) );
 $html = $box( $o );
 $check( 'box: request button, no limit notice', false !== strpos( $html, 'data-action="request_payment"' ) && false === strpos( $html, 'limit' ) );
-$second = $service->request( $o, null, false );
+$second = $service->request( $o, false );
 $check( 'second payment for the new change', $second instanceof \ModwellLabs\OrderBalance\Payments\Payment && 18.0 === (float) $second->get_total() && 2 === count( $plugin->payments()->for_order( $fresh( $o ) ) ), is_wp_error( $second ) ? $second->get_error_message() : '' );
 wc_get_order( $second->get_id() )->payment_complete();
 $o = $add( $o, 'Mug' );
-$third = $service->request( $o, null, false );
+$third = $service->request( $o, false );
 $check( 'and a third', $third instanceof \ModwellLabs\OrderBalance\Payments\Payment, is_wp_error( $third ) ? $third->get_error_message() : '' );
 
-remove_filter( 'obal_request_while_open', $free, 99 );
 
 // 5. Pro, automatic: the waiting payment follows the order; one email after the delay.
 update_option( 'obal_waiting_mode', 'auto' );
 update_option( 'obal_waiting_email_delay', '5' );
 $obal_mails = array();
 $o          = $add( $new_paid_order(), 'Mug' );
-$p          = $service->request( $o, null, false );
+$p          = $service->request( $o, false );
 $o          = $add( $o, 'Poster' );
 $check( 'auto: payment follows the first edit', 30.0 === $amount( $p ), $amount( $p ) );
 $o = $add( $o, 'Poster' );
@@ -138,11 +131,11 @@ as_unschedule_all_actions( 'obal_pro_waiting_email', array( 'order_id' => $o->ge
 // 6. Pro, separate payment: the waiting one stays and the difference is requested apart.
 update_option( 'obal_waiting_mode', 'new' );
 $o    = $add( $new_paid_order(), 'Mug' );
-$p    = $service->request( $o, null, false );
+$p    = $service->request( $o, false );
 $o    = $add( $o, 'Poster' );
 $html = $box( $o );
-$check( 'new: box requests the difference, no update', false !== strpos( $html, 'data-action="request_payment"' ) && false === strpos( $html, 'data-action="update_payment"' ) && 12.0 === $amount( $p ) );
-$second = $service->request( $o, null, false );
+$check( 'new: box requests the difference, no update', false !== strpos( $html, 'data-action="request_part"' ) && false === strpos( $html, 'data-action="update_payment"' ) && 12.0 === $amount( $p ) );
+$second = $plugin->get( 'ModwellLabs\OrderBalancePro\Features\ParallelPayments' )->request( $o, null, false );
 $check( 'new: second payment for 18', $second instanceof Payment && 18.0 === (float) $second->get_total() );
 $o = $remove( $o, 'Poster' );
 $check( 'new: a decrease is still offered as an update', false !== strpos( $box( $o ), 'data-action="update_payment"' ) );
@@ -155,7 +148,7 @@ update_option( 'obal_change_fee_type', 'percent' );
 update_option( 'obal_change_fee_amount', '10' );
 update_option( 'obal_change_fee_taxable', 'no' );
 $o = $add( $new_paid_order(), 'Mug' );
-$p = $service->request( $o, null, false );
+$p = $service->request( $o, false );
 $check( 'fee: 10% of 12', 1.2 === wc_get_order( $p->get_id() )->get_store_fees() );
 $o = $add( $o, 'Poster' );
 $service->update_waiting( $o, false );
@@ -169,7 +162,7 @@ foreach ( array( 'obal_waiting_mode', 'obal_waiting_email_delay', 'obal_change_f
 // 8. WooCommerce's own order emails stay off for balance payments; a customer note stays on.
 WC()->mailer();
 $o  = $add( $new_paid_order(), 'Mug' );
-$p  = wc_get_order( $service->request( $o, null, false )->get_id() );
+$p  = wc_get_order( $service->request( $o, false )->get_id() );
 $on = static function ( string $id, $object ): bool {
 	return (bool) apply_filters( 'woocommerce_email_enabled_' . $id, true, $object );
 };
@@ -188,7 +181,7 @@ $check( 'partial refund of a payment sends no WooCommerce email', ! $mailed( 're
 
 // 9. The pay page refuses an amount the customer did not see.
 $o    = $add( $new_paid_order(), 'Mug' );
-$p    = wc_get_order( $service->request( $o, null, false )->get_id() );
+$p    = wc_get_order( $service->request( $o, false )->get_id() );
 $seen = \ModwellLabs\OrderBalance\Frontend\PayGuard::fingerprint( $p );
 $check( 'pay guard: same amount passes', \ModwellLabs\OrderBalance\Frontend\PayGuard::matches( wc_get_order( $p->get_id() ), $seen ), $seen );
 $o = $add( $o, 'Poster' );
@@ -215,7 +208,7 @@ $check( 'pay page: no zero subtotal row for a payment', ! isset( wc_get_order( $
 update_option( 'obal_waiting_mode', 'auto' );
 update_option( 'obal_waiting_email_delay', '5' );
 $o    = $add( $new_paid_order(), 'Mug' );
-$p    = $service->request( $o, null, false );
+$p    = $service->request( $o, false );
 $o    = $add( $o, 'Poster' );
 $args = array( 'order_id' => $o->get_id() );
 $check( 'tracking: automatic email scheduled', (bool) as_next_scheduled_action( 'obal_pro_waiting_email', $args, 'order-balance' ) );

@@ -20,7 +20,7 @@ use ModwellLabs\OrderBalance\Template;
 $adm_order = $new_paid_order();
 $adm_order->add_product( $product( 'Mug' ), 1 );
 $adm_order->calculate_totals();
-$open = $plugin->service()->request( wc_get_order( $adm_order->get_id() ), null, false );
+$open = $plugin->service()->request( wc_get_order( $adm_order->get_id() ), false );
 $open->payment_complete();
 $open = wc_get_order( $open->get_id() );
 
@@ -29,18 +29,28 @@ include_once WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
 wp_set_current_user( 1 );
 set_current_screen( 'toplevel_page_order-balance' );
 
-$table = new \ModwellLabs\OrderBalance\Admin\PaymentsTable( $plugin );
-$table->prepare_items();
-$check( 'payments table lists payments', count( $table->items ) > 0, count( $table->items ) );
+if ( class_exists( '\ModwellLabs\OrderBalancePro\Admin\PaymentsTable' ) ) {
+	$table = new \ModwellLabs\OrderBalancePro\Admin\PaymentsTable( $plugin );
+	$table->prepare_items();
+	$check( 'pro: payments table lists payments', count( $table->items ) > 0, count( $table->items ) );
+}
 
 $page = $plugin->get( \ModwellLabs\OrderBalance\Admin\AdminPage::class );
-foreach ( array( 'payments', 'settings', 'emails', 'about' ) as $tab ) {
+foreach ( array_keys( $page->tabs() ) as $tab ) {
 	$_GET['tab'] = $tab;
 	ob_start();
 	$page->render();
 	$html = ob_get_clean();
 	$check( "admin tab {$tab} renders", false !== strpos( $html, 'nav-tab-active' ) && false === stripos( $html, 'fatal' ) );
 }
+
+$_GET['tab']     = 'payment';
+$_GET['payment'] = (string) $open->get_id();
+ob_start();
+$page->render();
+$html = ob_get_clean();
+unset( $_GET['payment'] );
+$check( 'single payment screen renders', false !== strpos( $html, $open->get_order_number() ) && false === stripos( $html, 'fatal' ) );
 
 // Settings: one page with a tab per category.
 $categories = $plugin->settings()->categories();
@@ -76,7 +86,7 @@ $check( 'unknown category falls back to the first', false !== strpos( $html, 'ob
 unset( $_GET['section'] );
 $check( 'rounding category order: automatic first, then threshold', array( 'obal_rounding', 'obal_auto_rounding', 'obal_rounding_threshold', 'obal_adjustment_label', 'obal_rounding' ) === wp_list_pluck( $plugin->settings()->category_fields( 'rounding' ), 'id' ) );
 $check( 'rounding is not a main tab', ! array_key_exists( 'rounding', $page->tabs() ) );
-$_GET['tab']     = 'payments';
+$_GET['tab']     = 'payment';
 $_GET['payment'] = $open->get_id();
 ob_start();
 $page->render();
