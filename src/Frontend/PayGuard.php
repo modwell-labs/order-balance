@@ -75,7 +75,7 @@ final class PayGuard implements Module {
 				'schema_callback' => static function () {
 					return array(
 						'seen_total' => array(
-							'description' => 'Amount the pay page showed for a balance payment.',
+							'description' => __( 'Amount the pay page showed for a balance payment.', 'modwell-order-balance-for-woocommerce' ),
 							'type'        => array( 'string', 'null' ),
 							'context'     => array(),
 						),

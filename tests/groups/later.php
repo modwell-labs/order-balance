@@ -23,17 +23,11 @@ $cod = $later_order( 'cod', 'processing' );
 $b   = $plugin->balance()->for_order( $cod );
 $check( 'COD processing is not paid', $b->tracked && 0.0 === $b->paid && 37.0 === $b->due, $b );
 
-// Pro: record part of the balance paid in cash.
-$cash = $plugin->get( 'ModwellLabs\OrderBalancePro\Features\RecordPayment' )->record( $cod, 10.0, 'Cash' );
-$cod  = wc_get_order( $cod->get_id() );
-$b    = $plugin->balance()->for_order( $cod );
-$check( 'record partial cash', $cash instanceof Payment && $cash->is_recorded() && 27.0 === $b->due, is_wp_error( $cash ) ? $cash->get_error_message() : $b );
-$check( 'partial cash sets partially paid', $cod->has_status( PaymentType::STATUS ), $cod->get_status() );
-
 $cod->update_status( 'completed' );
-$cod = wc_get_order( $cod->get_id() );
-$b   = $plugin->balance()->for_order( $cod );
-$check( 'COD completed records the rest', $b->is_settled() && 2 === count( $plugin->payments()->for_order( $cod ) ), $b );
+$cod      = wc_get_order( $cod->get_id() );
+$b        = $plugin->balance()->for_order( $cod );
+$recorded = $plugin->payments()->for_order( $cod );
+$check( 'COD completed records the total', $b->is_settled() && 1 === count( $recorded ) && $recorded[0]->is_recorded() && 37.0 === (float) $recorded[0]->get_total(), $b );
 
 $bacs = $later_order( 'bacs', 'on-hold' );
 $check( 'BACS on-hold owes total', 37.0 === $plugin->balance()->for_order( $bacs )->due );

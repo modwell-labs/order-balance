@@ -19,10 +19,8 @@ defined( 'ABSPATH' ) || exit;
 
 	<div class="obal-card">
 		<h2><?php esc_html_e( 'Order Balance Pro', 'modwell-order-balance-for-woocommerce' ); ?></h2>
-		<p><?php esc_html_e( 'A separate add-on is in development.', 'modwell-order-balance-for-woocommerce' ); ?> <a href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Learn more', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
+		<p><?php esc_html_e( 'A Pro version is in development.', 'modwell-order-balance-for-woocommerce' ); ?> <a href="https://modwelllabs.com/order-balance/" target="_blank" rel="noopener"><?php esc_html_e( 'Learn more', 'modwell-order-balance-for-woocommerce' ); ?></a></p>
 	</div>
-
-	<?php do_action( 'obal_about_cards' ); ?>
 
 	<div class="obal-card">
 		<h2><?php esc_html_e( 'Support', 'modwell-order-balance-for-woocommerce' ); ?></h2>

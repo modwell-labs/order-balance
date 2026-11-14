@@ -77,7 +77,7 @@ final class PaymentScreen implements Module {
 			wp_die( esc_html__( 'Payment not found.', 'modwell-order-balance-for-woocommerce' ), 404 );
 		}
 
-		$note = isset( $_POST['obal_note'] ) ? wp_kses_post( trim( wp_unslash( $_POST['obal_note'] ) ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$note = isset( $_POST['obal_note'] ) ? trim( wp_kses_post( wp_unslash( $_POST['obal_note'] ) ) ) : '';
 		if ( '' !== $note ) {
 			$to_customer = ! empty( $_POST['obal_note_customer'] );
 			$payment->add_order_note( $note, $to_customer ? 1 : 0, true );

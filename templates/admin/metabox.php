@@ -7,6 +7,7 @@
  * @var bool                                             $can_request
  * @var array                                            $plan      What updating the waiting payment would do.
  * @var bool                                             $show_update
+ * @var bool                                             $setup     The first-time setup is not done or skipped yet.
  * @var array|null                                       $last_notice Last "Order updated" email: payment, amount, time.
  * @var string                                           $mode_label
  */
@@ -16,6 +17,14 @@ defined( 'ABSPATH' ) || exit;
 $obal_currency = array( 'currency' => $order->get_currency() );
 ?>
 <div class="obal-box" data-order="<?php echo esc_attr( $order->get_id() ); ?>">
+	<?php if ( $setup ) : ?>
+		<p class="obal-muted obal-setup-hint">
+			<?php esc_html_e( 'The first-time setup has not been done yet.', 'modwell-order-balance-for-woocommerce' ); ?>
+			<a href="<?php echo esc_url( ModwellLabs\OrderBalance\Admin\SetupWizard::url() ); ?>"><?php esc_html_e( 'Run setup', 'modwell-order-balance-for-woocommerce' ); ?></a>
+			|
+			<a href="<?php echo esc_url( ModwellLabs\OrderBalance\Admin\SetupWizard::skip_url() ); ?>"><?php esc_html_e( 'Skip', 'modwell-order-balance-for-woocommerce' ); ?></a>
+		</p>
+	<?php endif; ?>
 	<?php if ( ! $balance->tracked ) : ?>
 		<p class="obal-muted"><?php esc_html_e( 'Balance tracking starts once the order is paid.', 'modwell-order-balance-for-woocommerce' ); ?></p>
 	<?php else : ?>
@@ -162,11 +171,8 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 						?>
 					</p>
 				<?php endif; ?>
-				<?php do_action( 'obal_metabox_email_status', $order ); ?>
 				<button type="button" class="button-link obal-action" data-action="resend"><?php esc_html_e( 'Resend update email', 'modwell-order-balance-for-woocommerce' ); ?></button>
 			<?php endif; ?>
-
-			<?php do_action( 'obal_metabox_actions', $order, $balance ); ?>
 		</div>
 
 		<p class="obal-muted obal-hint"><?php esc_html_e( 'The balance updates when you recalculate or save the order.', 'modwell-order-balance-for-woocommerce' ); ?></p>

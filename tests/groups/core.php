@@ -41,14 +41,7 @@ $order->add_product( $product( 'Poster' ), 1 );
 $order->calculate_totals();
 $order  = wc_get_order( $order->get_id() );
 $second = $plugin->service()->request( $order );
-$check( 'free: no second payment while one is waiting', is_wp_error( $second ) && 'obal_waiting' === $second->get_error_code(), is_wp_error( $second ) ? $second->get_error_code() : 'created' );
-// Pro: another payment while one is waiting, for part of the balance.
-$parallel = 'ModwellLabs\OrderBalancePro\Features\ParallelPayments';
-if ( class_exists( $parallel ) ) {
-	$custom = $plugin->get( $parallel )->request( $order, 5.0, false );
-	$check( 'pro: second payment of 5 while one waits', $custom instanceof Payment && 5.0 === (float) $custom->get_total(), is_wp_error( $custom ) ? $custom->get_error_message() : '' );
-	$custom->update_status( 'cancelled' );
-}
+$check( 'no second payment while one is waiting', is_wp_error( $second ) && 'obal_waiting' === $second->get_error_code(), is_wp_error( $second ) ? $second->get_error_code() : 'created' );
 
 $payment = wc_get_order( $payment->get_id() );
 $payment->payment_complete();
@@ -127,32 +120,12 @@ do_action( 'woocommerce_order_details_after_order_table', $order );
 $account = ob_get_clean();
 $check( 'account balance renders', false !== strpos( $account, 'obal-account-balance' ) );
 
-$invoice = Template::html(
-	'invoice.php',
-	array(
-		'order'    => $order,
-		'balance'  => $b,
-		'payments' => $plugin->payments()->for_order( $order ),
-		'refunds'  => $order->get_refunds(),
-		'initial'  => 25.0,
-		'store'    => array(
-			'name'    => 'Test',
-			'address' => '',
-			'email'   => '',
-		),
-	),
-	WP_PLUGIN_DIR . '/order-balance-pro/templates/'
-);
-$check( 'invoice renders', false !== strpos( $invoice, 'Refund of overpayment' ) );
-
 $other = $new_paid_order();
 $other->add_product( $product( 'Mug' ), 1 );
 $other->calculate_totals();
 $open = $plugin->service()->request( wc_get_order( $other->get_id() ), false );
 wc_get_order( $other->get_id() )->update_status( 'cancelled' );
 $check( 'open payment cancelled with parent', wc_get_order( $open->get_id() )->has_status( 'cancelled' ) );
-
-$check( 'reminder scheduled', (bool) as_next_scheduled_action( 'obal_pro_payment_reminder', null, 'order-balance' ) );
 
 wc_get_order( $other->get_id() )->delete( true );
 $check( 'payments deleted with parent', ! wc_get_order( $open->get_id() ) );
@@ -172,42 +145,16 @@ $third->calculate_totals();
 $third = wc_get_order( $third->get_id() );
 $open  = $plugin->service()->request( $third, false );
 $names = array_keys( $plugin->actions()->available( $open ) );
-$check( 'open payment actions', array( 'cancel', 'reassign' ) === array_values( array_intersect( array( 'cancel', 'refund', 'reassign' ), $names ) ), $names );
-
-$obal_mails = array();
-$result     = $plugin->actions()->run(
-	'reassign',
-	$open,
-	array(
-		'email'      => 'company@example.com',
-		'first_name' => 'Acme',
-		'last_name'  => 'Ltd',
-	),
-	true
-);
-$open = wc_get_order( $open->get_id() );
-$check( 'payer changed', ! is_wp_error( $result ) && 'company@example.com' === $open->get_billing_email(), is_wp_error( $result ) ? $result->get_error_message() : $open->get_billing_email() );
-$check( 'update email goes to new payer', $mail_to( 'company@example.com' ), $obal_mails );
-$check( 'parent payer unchanged', 'buyer@example.com' === wc_get_order( $third->get_id() )->get_billing_email() );
+$check( 'open payment actions', array( 'mark_paid', 'cancel' ) === $names, $names );
 
 $obal_mails = array();
 $open->payment_complete();
-$check( 'receipt to payer', $mail_to( 'Payment received' ) && $mail_to( 'company@example.com' ), $obal_mails );
+$check( 'receipt to payer', $mail_to( 'Payment received' ) && $mail_to( 'buyer@example.com' ), $obal_mails );
 $check( 'admin receipt', $mail_to( get_option( 'admin_email' ) ), $obal_mails );
 
 $open  = wc_get_order( $open->get_id() );
 $names = array_keys( $plugin->actions()->available( $open ) );
-$check( 'paid payment actions', array( 'refund' ) === array_values( array_intersect( array( 'cancel', 'refund', 'reassign' ), $names ) ), $names );
-
-$obal_mails = array();
-$result     = $plugin->actions()->run( 'refund', $open, array( 'amount' => '20' ), true );
-$open       = wc_get_order( $open->get_id() );
-$third      = wc_get_order( $third->get_id() );
-$tb         = $plugin->balance()->for_order( $third );
-$check( 'partial refund of payment', ! is_wp_error( $result ) && 20.0 === (float) $open->get_total_refunded(), is_wp_error( $result ) ? $result->get_error_message() : $open->get_total_refunded() );
-$check( 'parent owes refunded part', 20.0 === $tb->due, $tb );
-$check( 'parent back to partially paid', $third->has_status( PaymentType::STATUS ), $third->get_status() );
-$check( 'refund email sent', $mail_to( 'Refund for your' ), $obal_mails );
+$check( 'no actions on a paid payment', array() === $names, $names );
 
 $fourth = $new_paid_order();
 $fourth->add_product( $product( 'Mug' ), 1 );

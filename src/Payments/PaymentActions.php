@@ -20,30 +20,26 @@ final class PaymentActions {
 	 * optional: fields(Payment): void, email (email id that "notify" controls), confirm, primary.
 	 */
 	public function all(): array {
-		return apply_filters(
-			'obal_payment_actions',
-			array(
-				'mark_paid' => array(
-					'label'     => __( 'Mark as paid outside the website', 'modwell-order-balance-for-woocommerce' ),
-					'available' => static function ( Payment $payment ) {
-						return $payment->is_open();
-					},
-					'fields'    => array( $this, 'mark_paid_fields' ),
-					'callback'  => array( $this, 'mark_paid' ),
-					'email'     => 'obal_payment_received',
-					'primary'   => true,
-				),
-				'cancel'    => array(
-					'label'     => __( 'Cancel payment', 'modwell-order-balance-for-woocommerce' ),
-					'available' => static function ( Payment $payment ) {
-						return $payment->is_open();
-					},
-					'callback'  => array( $this, 'cancel' ),
-					'email'     => 'obal_payment_cancelled',
-					'confirm'   => __( 'Cancel this payment? The customer will no longer be able to pay it.', 'modwell-order-balance-for-woocommerce' ),
-				),
+		return array(
+			'mark_paid' => array(
+				'label'     => __( 'Mark as paid outside the website', 'modwell-order-balance-for-woocommerce' ),
+				'available' => static function ( Payment $payment ) {
+					return $payment->is_open();
+				},
+				'fields'    => array( $this, 'mark_paid_fields' ),
+				'callback'  => array( $this, 'mark_paid' ),
+				'email'     => 'obal_payment_received',
+				'primary'   => true,
 			),
-			$this->plugin
+			'cancel'    => array(
+				'label'     => __( 'Cancel payment', 'modwell-order-balance-for-woocommerce' ),
+				'available' => static function ( Payment $payment ) {
+					return $payment->is_open();
+				},
+				'callback'  => array( $this, 'cancel' ),
+				'email'     => 'obal_payment_cancelled',
+				'confirm'   => __( 'Cancel this payment? The customer will no longer be able to pay it.', 'modwell-order-balance-for-woocommerce' ),
+			),
 		);
 	}
 
@@ -65,13 +61,7 @@ final class PaymentActions {
 			return new \WP_Error( 'obal_action_unavailable', __( 'This action is not available for this payment.', 'modwell-order-balance-for-woocommerce' ) );
 		}
 
-		$result = call_user_func( $actions[ $name ]['callback'], $payment, $input, $notify );
-
-		if ( ! is_wp_error( $result ) ) {
-			do_action( 'obal_payment_action_done', $name, $payment, $input );
-		}
-
-		return $result;
+		return call_user_func( $actions[ $name ]['callback'], $payment, $input, $notify );
 	}
 
 	public function mark_paid_fields( Payment $payment ): void {

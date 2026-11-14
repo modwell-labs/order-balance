@@ -2,6 +2,7 @@
 
 namespace ModwellLabs\OrderBalance\Payments;
 
+use ModwellLabs\OrderBalance\Emails\Emails;
 use ModwellLabs\OrderBalance\Module;
 use ModwellLabs\OrderBalance\Plugin;
 
@@ -88,7 +89,7 @@ final class StatusSync implements Module {
 				);
 			}
 			$parent->add_order_note( $note );
-			do_action( 'obal_payment_paid', $payment, $parent );
+			$this->plugin->get( Emails::class )->payment_paid( $payment );
 		}
 
 		$this->refresh( $parent );
@@ -108,7 +109,5 @@ final class StatusSync implements Module {
 		if ( ! $open && ( $balance->is_settled() || $balance->is_overpaid() ) ) {
 			$this->plugin->service()->release_partial( $parent );
 		}
-
-		do_action( 'obal_balance_refreshed', $parent, $balance );
 	}
 }

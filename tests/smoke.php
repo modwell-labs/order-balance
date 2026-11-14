@@ -6,7 +6,7 @@
  *   core   balance, payments, refunds, statuses, emails, rounding
  *   admin  payment screen, settings categories, setup wizard
  *   later  pay-later payment methods (COD, BACS, manual orders)
- *   fees     payment method fees, order change fee, tax on fees
+ *   fees     payment method fees and refunds of payments with fees
  *   tax      balance and payments with taxes, prices with and without tax
  *   changes  the order changes again while a payment is waiting
  *   compat   payment plugins and other plugins finding balance payments

@@ -120,8 +120,6 @@ final class Settings implements Module {
 			),
 		);
 
-		$fields = apply_filters( 'obal_settings_fields', $fields );
-
 		// Data handling always comes last.
 		return array_merge(
 			$fields,
@@ -150,68 +148,32 @@ final class Settings implements Module {
 
 	/**
 	 * Settings categories: the tabs inside the Settings page. Each one lists the settings
-	 * sections it shows. Sections nobody has placed get a category of their own, named after
-	 * the section; data handling always comes last.
+	 * sections it shows; data handling always comes last.
 	 *
 	 * @return array<string, array{label: string, sections: string[]}>
 	 */
 	public function categories(): array {
-		$sections   = $this->sections();
-		$categories = (array) apply_filters(
-			'obal_settings_categories',
-			array(
-				'payments' => array(
-					'label'    => __( 'Payment methods', 'modwell-order-balance-for-woocommerce' ),
-					'sections' => array( 'obal_payments' ),
-				),
-				'status'   => array(
-					'label'    => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
-					'sections' => array( 'obal_statuses' ),
-				),
-				'rounding' => array(
-					'label'    => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
-					'sections' => array( 'obal_rounding' ),
-				),
-				'fees'     => array(
-					'label'    => __( 'Fees', 'modwell-order-balance-for-woocommerce' ),
-					'sections' => array( 'obal_fees' ),
-				),
-			)
-		);
-
-		$placed = array( 'obal_data' );
-		foreach ( $categories as $category ) {
-			$placed = array_merge( $placed, $category['sections'] );
-		}
-		foreach ( $sections as $id => $fields ) {
-			if ( in_array( $id, $placed, true ) ) {
-				continue;
-			}
-			$label = $id;
-			foreach ( $fields as $field ) {
-				if ( isset( $field['type'], $field['title'] ) && 'title' === $field['type'] && '' !== $field['title'] ) {
-					$label = (string) $field['title'];
-					break;
-				}
-			}
-			$categories[ $id ] = array(
-				'label'    => $label,
-				'sections' => array( $id ),
-			);
-		}
-		if ( isset( $sections['obal_data'] ) ) {
-			$categories['data'] = array(
+		return array(
+			'payments' => array(
+				'label'    => __( 'Payment methods', 'modwell-order-balance-for-woocommerce' ),
+				'sections' => array( 'obal_payments' ),
+			),
+			'status'   => array(
+				'label'    => __( 'Order status', 'modwell-order-balance-for-woocommerce' ),
+				'sections' => array( 'obal_statuses' ),
+			),
+			'rounding' => array(
+				'label'    => __( 'Rounding', 'modwell-order-balance-for-woocommerce' ),
+				'sections' => array( 'obal_rounding' ),
+			),
+			'fees'     => array(
+				'label'    => __( 'Fees', 'modwell-order-balance-for-woocommerce' ),
+				'sections' => array( 'obal_fees' ),
+			),
+			'data'     => array(
 				'label'    => __( 'Data', 'modwell-order-balance-for-woocommerce' ),
 				'sections' => array( 'obal_data' ),
-			);
-		}
-
-		// Drop categories whose sections do not exist.
-		return array_filter(
-			$categories,
-			static function ( array $category ) use ( $sections ) {
-				return (bool) array_intersect( $category['sections'], array_keys( $sections ) );
-			}
+			),
 		);
 	}
 
@@ -262,14 +224,11 @@ final class Settings implements Module {
 	}
 
 	public function mode_labels(): array {
-		return apply_filters(
-			'obal_payment_modes',
-			array(
-				self::MODE_CHECKOUT   => __( 'Paid at checkout', 'modwell-order-balance-for-woocommerce' ),
-				self::MODE_PROCESSING => __( 'Paid later: mark paid at Processing', 'modwell-order-balance-for-woocommerce' ),
-				self::MODE_COMPLETED  => __( 'Paid later: mark paid at Completed', 'modwell-order-balance-for-woocommerce' ),
-				self::MODE_MANUAL     => __( 'Paid later: mark paid by hand', 'modwell-order-balance-for-woocommerce' ),
-			)
+		return array(
+			self::MODE_CHECKOUT   => __( 'Paid at checkout', 'modwell-order-balance-for-woocommerce' ),
+			self::MODE_PROCESSING => __( 'Paid later: mark paid at Processing', 'modwell-order-balance-for-woocommerce' ),
+			self::MODE_COMPLETED  => __( 'Paid later: mark paid at Completed', 'modwell-order-balance-for-woocommerce' ),
+			self::MODE_MANUAL     => __( 'Paid later: mark paid by hand', 'modwell-order-balance-for-woocommerce' ),
 		);
 	}
 
@@ -347,7 +306,7 @@ final class Settings implements Module {
 			return $saved[ $id ];
 		}
 
-		return (string) apply_filters( 'obal_default_gateway_mode', $this->default_mode( $id ), $id );
+		return $this->default_mode( $id );
 	}
 
 	public function order_mode( \WC_Order $order ): string {

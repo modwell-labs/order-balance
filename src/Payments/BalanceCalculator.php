@@ -48,8 +48,6 @@ final class BalanceCalculator {
 			}
 		}
 
-		$balance = new Balance( (float) $order->get_total(), $paid, $requested, $tracked );
-
-		return apply_filters( 'obal_balance', $balance, $order, $mode );
+		return new Balance( (float) $order->get_total(), $paid, $requested, $tracked );
 	}
 }

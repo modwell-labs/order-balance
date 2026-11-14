@@ -65,8 +65,6 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); // phpcs:ignore
 <?php endif; ?>
 
 <?php
-do_action( 'obal_payment_email_after_details', $payment, $order, $sent_to_admin, $email );
-
 if ( $additional_content ) {
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
 }

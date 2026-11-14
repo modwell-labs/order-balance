@@ -46,7 +46,7 @@ final class AdminPage implements Module {
 	}
 
 	public function menu(): void {
-		$hook = add_menu_page(
+		add_menu_page(
 			__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ),
 			__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ),
 			'edit_shop_orders',
@@ -55,9 +55,6 @@ final class AdminPage implements Module {
 			'dashicons-money-alt',
 			'55.7'
 		);
-		if ( $hook ) {
-			add_action( 'load-' . $hook, array( $this, 'load' ) );
-		}
 
 		$first = true;
 		foreach ( $this->tabs() as $id => $label ) {
@@ -77,21 +74,12 @@ final class AdminPage implements Module {
 		return ( self::PAYMENT_VIEW === $tab || reset( $tabs ) === $tab ) ? self::SLUG : 'admin.php?page=' . self::SLUG . '&tab=' . $tab;
 	}
 
-	/**
-	 * Runs before the page is sent, so a tab added by other code can process a form and redirect.
-	 */
-	public function load(): void {
-		do_action( 'obal_admin_load_' . $this->current_tab(), $this->plugin );
-	}
-
 	public function tabs(): array {
-		$tabs = array(
+		return array(
 			'settings' => __( 'Settings', 'modwell-order-balance-for-woocommerce' ),
 			'emails'   => __( 'Emails', 'modwell-order-balance-for-woocommerce' ),
+			'about'    => __( 'About', 'modwell-order-balance-for-woocommerce' ),
 		);
-		$tabs['about'] = __( 'About', 'modwell-order-balance-for-woocommerce' );
-
-		return apply_filters( 'obal_admin_tabs', $tabs );
 	}
 
 	public function current_tab(): string {
@@ -157,8 +145,6 @@ final class AdminPage implements Module {
 			Template::render( 'admin/emails.php', array( 'emails' => $this->emails() ) );
 		} elseif ( 'about' === $tab ) {
 			Template::render( 'admin/about.php', array( 'info' => $this->environment() ) );
-		} else {
-			do_action( 'obal_admin_tab_' . $tab, $this->plugin );
 		}
 
 		echo '</div>';
@@ -184,7 +170,7 @@ final class AdminPage implements Module {
 				esc_html( $category['label'] )
 			);
 		}
-		echo '<ul class="subsubsub obal-subnav">' . implode( ' |</li>', $links ) . '</li></ul><br class="clear">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo wp_kses_post( '<ul class="subsubsub obal-subnav">' . implode( ' |</li>', $links ) . '</li></ul><br class="clear">' );
 
 		printf(
 			'<p class="obal-setup-link">%1$s <a href="%2$s">%3$s</a></p>',
@@ -232,8 +218,6 @@ final class AdminPage implements Module {
 			$args['section'] = $category;
 		} elseif ( 'emails' === $section ) {
 			$this->save_emails( isset( $_POST['obal_email'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['obal_email'] ) ) : array() );
-		} else {
-			do_action( 'obal_admin_save_' . $section, $this->plugin );
 		}
 
 		self::notice( __( 'Settings saved.', 'modwell-order-balance-for-woocommerce' ) );
@@ -272,15 +256,12 @@ final class AdminPage implements Module {
 		$hpos = OrderUtil::custom_orders_table_usage_is_enabled();
 		$sync = 'yes' === get_option( 'woocommerce_custom_orders_table_data_sync_enabled' );
 
-		return apply_filters(
-			'obal_about_info',
-			array(
-				__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ) => MODWELL_OBAL_VERSION,
-				__( 'WordPress', 'modwell-order-balance-for-woocommerce' )     => get_bloginfo( 'version' ),
-				__( 'WooCommerce', 'modwell-order-balance-for-woocommerce' )   => defined( 'WC_VERSION' ) ? WC_VERSION : '',
-				__( 'PHP', 'modwell-order-balance-for-woocommerce' )           => PHP_VERSION,
-				__( 'Order storage', 'modwell-order-balance-for-woocommerce' ) => $hpos ? ( $sync ? __( 'HPOS with compatibility sync', 'modwell-order-balance-for-woocommerce' ) : __( 'HPOS', 'modwell-order-balance-for-woocommerce' ) ) : __( 'Legacy (posts)', 'modwell-order-balance-for-woocommerce' ),
-			)
+		return array(
+			__( 'Order Balance', 'modwell-order-balance-for-woocommerce' ) => MODWELL_OBAL_VERSION,
+			__( 'WordPress', 'modwell-order-balance-for-woocommerce' )     => get_bloginfo( 'version' ),
+			__( 'WooCommerce', 'modwell-order-balance-for-woocommerce' )   => defined( 'WC_VERSION' ) ? WC_VERSION : '',
+			__( 'PHP', 'modwell-order-balance-for-woocommerce' )           => PHP_VERSION,
+			__( 'Order storage', 'modwell-order-balance-for-woocommerce' ) => $hpos ? ( $sync ? __( 'HPOS with compatibility sync', 'modwell-order-balance-for-woocommerce' ) : __( 'HPOS', 'modwell-order-balance-for-woocommerce' ) ) : __( 'Legacy (posts)', 'modwell-order-balance-for-woocommerce' ),
 		);
 	}
 

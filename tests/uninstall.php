@@ -58,11 +58,22 @@ $make = static function () use ( $plugin, $product ) {
 	return array( $order->get_id(), $open->get_id() );
 };
 
-$run_uninstall = static function () {
+/**
+ * WordPress deletes a plugin only when it is inactive, so its payment type is not registered.
+ * The type is taken away for the run, unless $in_use simulates another active plugin that
+ * still registers it.
+ */
+$run_uninstall = static function ( bool $in_use = false ) {
+	global $wp_post_types;
 	if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 		define( 'WP_UNINSTALL_PLUGIN', plugin_basename( dirname( __DIR__ ) . '/order-balance.php' ) );
 	}
+	$type = $wp_post_types[ Payment::TYPE ];
+	if ( ! $in_use ) {
+		unset( $wp_post_types[ Payment::TYPE ] );
+	}
 	include dirname( __DIR__ ) . '/uninstall.php';
+	$wp_post_types[ Payment::TYPE ] = $type; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- restores the type after the simulated delete.
 	wp_cache_flush();
 };
 
@@ -75,6 +86,14 @@ $fresh = static function ( int $id ) {
 };
 
 echo 'Storage: ' . ( \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ? 'HPOS' : 'legacy' ) . "\n";
+
+// 0. Another active plugin still uses the data: nothing changes, even with "Delete all data".
+update_option( 'obal_delete_data', 'yes' );
+list( $order0_id, $payment0_id ) = $make();
+$run_uninstall( true );
+$check( 'in use: parent still partially paid', $fresh( $order0_id )->has_status( PaymentType::STATUS ), $fresh( $order0_id )->get_status() );
+$check( 'in use: payment kept', $fresh( $payment0_id ) instanceof Payment );
+$check( 'in use: settings kept', 'yes' === get_option( 'obal_delete_data' ) );
 
 // 1. Plain delete: data is kept, partially paid orders move to on hold.
 update_option( 'obal_delete_data', 'no' );
@@ -121,15 +140,6 @@ $check( 'full: settings removed', false === get_option( 'obal_rounding_threshold
 $check( 'full: email settings removed', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE 'woocommerce\\_obal\\_%'" ) );
 $check( 'full: notes of payments removed', 0 === (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->comments} WHERE comment_post_ID = %d", $payment2_id ) ) );
 $check( 'full: no order meta left', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key LIKE '\\_obal\\_%'" ) );
-// The free plugin schedules nothing; Pro cancels its own scheduled emails when it is deleted.
-$obal_pro_uninstall = WP_PLUGIN_DIR . '/order-balance-pro/uninstall.php';
-if ( file_exists( $obal_pro_uninstall ) ) {
-	if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-		define( 'WP_UNINSTALL_PLUGIN', 'order-balance-pro/order-balance-pro.php' );
-	}
-	include $obal_pro_uninstall;
-}
-$check( 'full: no scheduled actions left', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}actionscheduler_actions WHERE hook LIKE 'obal\\_%' AND status = 'pending'" ) );
 
 foreach ( $obal_saved_options as $obal_option => $obal_row ) {
 	update_option( $obal_option, maybe_unserialize( $obal_row->option_value ) );

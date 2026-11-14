@@ -136,7 +136,7 @@ class Payment extends \WC_Order {
 	}
 
 	public function refunds_fees(): bool {
-		return (bool) apply_filters( 'obal_refund_payment_fees', Plugin::instance()->settings()->enabled( 'refund_payment_fees' ), $this );
+		return Plugin::instance()->settings()->enabled( 'refund_payment_fees' );
 	}
 
 	/**

@@ -33,35 +33,30 @@ final class Plugin {
 		}
 		$this->booted = true;
 
-		$modules = apply_filters(
-			'obal_modules',
-			array(
-				Settings::class,
-				Payments\PaymentType::class,
-				Payments\PaidTracker::class,
-				Payments\LaterPayments::class,
-				Payments\StatusSync::class,
-				Payments\AutoAdjustment::class,
-				Payments\GatewayLookup::class,
-				Admin\AdminPage::class,
-				Admin\SetupWizard::class,
-				Admin\PaymentScreen::class,
-				Admin\OrderMetabox::class,
-				Admin\Ajax::class,
-				Emails\Emails::class,
-				Frontend\Account::class,
-				Frontend\PayGuard::class,
-			)
+		$modules = array(
+			Settings::class,
+			Payments\PaymentType::class,
+			Payments\PaidTracker::class,
+			Payments\LaterPayments::class,
+			Payments\StatusSync::class,
+			Payments\AutoAdjustment::class,
+			Payments\GatewayLookup::class,
+			Admin\AdminPage::class,
+			Admin\SetupWizard::class,
+			Admin\PaymentScreen::class,
+			Admin\OrderMetabox::class,
+			Admin\Ajax::class,
+			Emails\Emails::class,
+			Frontend\Account::class,
+			Frontend\PayGuard::class,
 		);
 
-		foreach ( array_unique( $modules ) as $class ) {
+		foreach ( $modules as $class ) {
 			$module = $this->get( $class );
 			if ( $module instanceof Module ) {
 				$module->register( $this );
 			}
 		}
-
-		do_action( 'obal_loaded', $this );
 	}
 
 	/**

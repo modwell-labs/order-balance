@@ -33,15 +33,6 @@ final class BalanceService {
 	}
 
 	/**
-	 * Whether the Balance box offers to bring a waiting payment in line with the changed order.
-	 *
-	 * @param array<int, array{payment: Payment, from: float, to: float}> $plan
-	 */
-	public function offers_update( \WC_Order $order, array $plan ): bool {
-		return $plan && (bool) apply_filters( 'obal_offer_waiting_update', true, $order, $plan );
-	}
-
-	/**
 	 * How much the order total has changed since its waiting payments were requested or last
 	 * updated. Zero when nothing is waiting.
 	 */
@@ -130,8 +121,6 @@ final class BalanceService {
 			}
 		}
 
-		do_action( 'obal_waiting_updated', $order, $result );
-
 		if ( $notify ) {
 			$this->notify_waiting( $order, $result );
 		}
@@ -154,8 +143,7 @@ final class BalanceService {
 	}
 
 	/**
-	 * Changes what a waiting payment asks for. Fees added on top are refreshed through the
-	 * obal_payment_amount_changed action.
+	 * Changes what a waiting payment asks for.
 	 */
 	public function set_amount( Payment $payment, float $amount ): void {
 		$amount = round( $amount, wc_get_price_decimals() );
@@ -184,8 +172,6 @@ final class BalanceService {
 				wp_strip_all_tags( wc_price( $amount, array( 'currency' => $payment->get_currency() ) ) )
 			)
 		);
-
-		do_action( 'obal_payment_amount_changed', $payment, $old, $amount );
 	}
 
 	/**
@@ -210,7 +196,7 @@ final class BalanceService {
 
 		$this->plugin->settings()->lock_mode( $order );
 		$order->update_meta_data( self::REQUEST_TOTAL_META, wc_format_decimal( $order->get_total() ) );
-		$payment = $this->plugin->payments()->create( $order, $amount, (string) apply_filters( 'obal_payment_label', '', $order, $amount ) );
+		$payment = $this->plugin->payments()->create( $order, $amount );
 
 		$order->add_order_note(
 			sprintf(
@@ -222,8 +208,6 @@ final class BalanceService {
 		);
 
 		$this->mark_partial( $order );
-
-		do_action( 'obal_payment_requested', $payment, $order );
 
 		if ( $notify ) {
 			$this->notify( $order, $payment );
@@ -277,8 +261,6 @@ final class BalanceService {
 			$this->mark_partial( $order );
 		}
 
-		do_action( 'obal_payment_recorded', $payment, $order );
-
 		return $payment;
 	}
 
@@ -304,8 +286,6 @@ final class BalanceService {
 			);
 			$fresh->save();
 		}
-
-		do_action( 'obal_customer_notified', $order, $payment );
 	}
 
 	/**
@@ -341,7 +321,7 @@ final class BalanceService {
 				'order_id'       => $order->get_id(),
 				'amount'         => wc_format_decimal( $amount ),
 				'reason'         => __( 'Order balance refund', 'modwell-order-balance-for-woocommerce' ),
-				'refund_payment' => (bool) apply_filters( 'obal_refund_via_gateway', $automatic, $order ),
+				'refund_payment' => $automatic,
 				'restock_items'  => false,
 			)
 		);
@@ -356,8 +336,6 @@ final class BalanceService {
 		if ( ! $automatic ) {
 			$order->add_order_note( __( 'The payment method does not support automatic refunds. Send the money back manually.', 'modwell-order-balance-for-woocommerce' ) );
 		}
-
-		do_action( 'obal_balance_refunded', $refund, $order );
 
 		return $refund;
 	}
@@ -407,8 +385,6 @@ final class BalanceService {
 			)
 		);
 
-		do_action( 'obal_adjustment_applied', $order, $delta );
-
 		return true;
 	}
 
@@ -448,7 +424,7 @@ final class BalanceService {
 			$target = in_array( $previous, $unpaid, true ) ? ( $order->needs_processing() ? 'processing' : 'completed' ) : $previous;
 		}
 
-		return (string) apply_filters( 'obal_settled_status', $target, $order, $previous );
+		return $target;
 	}
 
 	private function adjustment_item( \WC_Order $order ): ?\WC_Order_Item_Fee {

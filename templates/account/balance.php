@@ -40,5 +40,4 @@ $obal_currency = array( 'currency' => $order->get_currency() );
 			</tr>
 		</tbody>
 	</table>
-	<?php do_action( 'obal_account_after_balance', $order, $balance ); ?>
 </section>

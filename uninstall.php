@@ -2,6 +2,7 @@
 /**
  * Runs when the plugin is deleted.
  *
+ * Nothing at all: while an active plugin still registers the balance payment type.
  * Always: orders in the plugin's "Partially paid" status move to "On hold", so they stay
  * visible once the status no longer exists.
  * Only with "Delete all data" on: balance payments with their refunds, items and notes,
@@ -61,7 +62,6 @@ if ( ! function_exists( 'obal_uninstall_site' ) ) {
 		$wpdb->query( $wpdb->prepare( 'UPDATE %i SET post_status = %s WHERE post_status = %s', $wpdb->posts, 'wc-on-hold', 'wc-obal-partial' ) );
 
 		if ( 'yes' !== get_option( 'obal_delete_data', 'no' ) ) {
-			wp_cache_flush();
 			return;
 		}
 
@@ -127,12 +127,16 @@ if ( ! function_exists( 'obal_uninstall_site' ) ) {
 		foreach ( array( 'obal_', 'woocommerce_obal_', '_transient_obal_', '_transient_timeout_obal_' ) as $prefix ) {
 			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE option_name LIKE %s', $wpdb->options, $wpdb->esc_like( $prefix ) . '%' ) );
 		}
-
-		wp_cache_flush();
 	}
 }
 
 // phpcs:enable
+
+// An active plugin still registers the balance payment type, so it still uses these orders,
+// statuses and settings: leave everything as it is.
+if ( post_type_exists( 'obal_payment' ) ) {
+	return;
+}
 
 if ( is_multisite() ) {
 	foreach ( get_sites(

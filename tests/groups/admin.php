@@ -29,12 +29,6 @@ include_once WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
 wp_set_current_user( 1 );
 set_current_screen( 'toplevel_page_order-balance' );
 
-if ( class_exists( '\ModwellLabs\OrderBalancePro\Admin\PaymentsTable' ) ) {
-	$table = new \ModwellLabs\OrderBalancePro\Admin\PaymentsTable( $plugin );
-	$table->prepare_items();
-	$check( 'pro: payments table lists payments', count( $table->items ) > 0, count( $table->items ) );
-}
-
 $page = $plugin->get( \ModwellLabs\OrderBalance\Admin\AdminPage::class );
 foreach ( array_keys( $page->tabs() ) as $tab ) {
 	$_GET['tab'] = $tab;
@@ -54,16 +48,13 @@ $check( 'single payment screen renders', false !== strpos( $html, $open->get_ord
 
 // Settings: one page with a tab per category.
 $categories = $plugin->settings()->categories();
-$check( 'settings categories', array( 'payments', 'status', 'changes', 'rounding', 'fees', 'obal_reminders', 'data' ) === array_keys( $categories ), array_keys( $categories ) );
-$check( 'settings categories: pro sections named after their title', 'Payment reminders' === $categories['obal_reminders']['label'] );
+$check( 'settings categories', array( 'payments', 'status', 'rounding', 'fees', 'data' ) === array_keys( $categories ), array_keys( $categories ) );
 $expect = array(
-	'payments'       => array( 'obal_gateway_modes', 'obal_auto_rounding' ),
-	'status'         => array( 'obal_paid_status', 'obal_rounding_threshold' ),
-	'changes'        => array( 'obal_waiting_mode', 'obal_paid_status' ),
-	'rounding'       => array( 'obal_auto_rounding', 'obal_paid_status' ),
-	'fees'           => array( 'obal_refund_payment_fees', 'obal_paid_status' ),
-	'obal_reminders' => array( 'obal_reminder_days', 'obal_paid_status' ),
-	'data'           => array( 'obal_delete_data', 'obal_paid_status' ),
+	'payments' => array( 'obal_gateway_modes', 'obal_auto_rounding' ),
+	'status'   => array( 'obal_paid_status', 'obal_rounding_threshold' ),
+	'rounding' => array( 'obal_auto_rounding', 'obal_paid_status' ),
+	'fees'     => array( 'obal_refund_payment_fees', 'obal_paid_status' ),
+	'data'     => array( 'obal_delete_data', 'obal_paid_status' ),
 );
 $_GET['tab'] = 'settings';
 foreach ( $expect as $category => $needles ) {
@@ -91,13 +82,11 @@ $_GET['payment'] = $open->get_id();
 ob_start();
 $page->render();
 $html = ob_get_clean();
-$check( 'payment screen renders with refund form', false !== strpos( $html, 'name="obal_action" value="refund"' ) );
 $check( 'payment screen looks like an order', false !== strpos( $html, 'id="woocommerce-order-items"' ) && false !== strpos( $html, 'id="order_data"' ) && false !== strpos( $html, 'Credited to the order' ) && false !== strpos( $html, 'name="obal_note"' ) );
 
 $wizard = $plugin->get( \ModwellLabs\OrderBalance\Admin\SetupWizard::class );
 $steps  = array_keys( $wizard->steps() );
-$check( 'setup steps', array( 'welcome', 'payments', 'status', 'changes', 'rounding', 'fees', 'emails', 'ready' ) === $steps, $steps );
-$check( 'setup: pro sections placed', in_array( 'obal_change_fee', $wizard->steps()['fees']['sections'], true ) );
+$check( 'setup steps', array( 'welcome', 'payments', 'status', 'rounding', 'fees', 'emails', 'ready' ) === $steps, $steps );
 $check( 'setup: data not in wizard', ! in_array( 'obal_data', array_merge( ...array_values( array_map( static function ( $s ) { return isset( $s['sections'] ) ? $s['sections'] : array(); }, $wizard->steps() ) ) ), true ) );
 $rounding_ids = wp_list_pluck( $wizard->fields( 'rounding' ), 'id' );
 $status_ids   = wp_list_pluck( $wizard->fields( 'status' ), 'id' );

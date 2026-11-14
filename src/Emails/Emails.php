@@ -52,7 +52,6 @@ final class Emails implements Module {
 	public function register( Plugin $plugin ): void {
 		add_filter( 'woocommerce_email_classes', array( $this, 'classes' ) );
 		add_filter( 'woocommerce_email_classes', array( $this, 'suppress_core' ), 999 );
-		add_action( 'obal_payment_paid', array( $this, 'payment_paid' ) );
 	}
 
 	/**
@@ -78,14 +77,11 @@ final class Emails implements Module {
 	}
 
 	public function classes( array $emails ): array {
-		$classes = apply_filters(
-			'obal_email_classes',
-			array(
-				'OBAL_Order_Updated'          => OrderUpdatedEmail::class,
-				'OBAL_Payment_Received'       => PaymentReceivedEmail::class,
-				'OBAL_Admin_Payment_Received' => AdminPaymentReceivedEmail::class,
-				'OBAL_Payment_Cancelled'      => PaymentCancelledEmail::class,
-			)
+		$classes = array(
+			'OBAL_Order_Updated'          => OrderUpdatedEmail::class,
+			'OBAL_Payment_Received'       => PaymentReceivedEmail::class,
+			'OBAL_Admin_Payment_Received' => AdminPaymentReceivedEmail::class,
+			'OBAL_Payment_Cancelled'      => PaymentCancelledEmail::class,
 		);
 
 		foreach ( $classes as $key => $class ) {
@@ -95,6 +91,9 @@ final class Emails implements Module {
 		return $emails;
 	}
 
+	/**
+	 * Called by StatusSync when a payment becomes paid.
+	 */
 	public function payment_paid( Payment $payment ): void {
 		if ( $payment->get_meta( Payment::NO_EMAIL_META ) ) {
 			return;

@@ -42,8 +42,6 @@ final class PaymentRepository {
 		// Saves what the caller set on the order, such as the mode lock and the request total.
 		$parent->save();
 
-		do_action( 'obal_payment_created', $payment, $parent );
-
 		return $payment;
 	}
 

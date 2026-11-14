@@ -20,6 +20,7 @@ final class SetupWizard implements Module {
 	public const DONE     = 'obal_setup_done';
 	public const REDIRECT = 'obal_setup_redirect';
 	public const NONCE    = 'obal-setup';
+	public const POINTER  = 'obal_setup_notice';
 
 	/** @var Plugin */
 	private $plugin;
@@ -34,6 +35,7 @@ final class SetupWizard implements Module {
 		add_action( 'admin_init', array( $this, 'maybe_redirect' ) );
 		add_action( 'admin_init', array( $this, 'save' ) );
 		add_action( 'admin_notices', array( $this, 'notice' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'dismiss_script' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 	}
 
@@ -41,8 +43,10 @@ final class SetupWizard implements Module {
 	 * Called from the activation hook.
 	 */
 	public static function activated(): void {
-		if ( 'yes' !== get_option( self::DONE ) ) {
-			set_transient( self::REDIRECT, 1, MINUTE_IN_SECONDS );
+		$user = get_current_user_id();
+		if ( $user && 'yes' !== get_option( self::DONE ) ) {
+			// Remember who activated the plugin: only that person is sent to the setup.
+			set_transient( self::REDIRECT, $user, MINUTE_IN_SECONDS );
 		}
 	}
 
@@ -67,7 +71,8 @@ final class SetupWizard implements Module {
 	}
 
 	public function maybe_redirect(): void {
-		if ( ! get_transient( self::REDIRECT ) ) {
+		$user = (int) get_transient( self::REDIRECT );
+		if ( ! $user || get_current_user_id() !== $user ) {
 			return;
 		}
 		if ( wp_doing_ajax() || is_network_admin() || isset( $_GET['activate-multi'] ) || ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -81,8 +86,40 @@ final class SetupWizard implements Module {
 		exit;
 	}
 
+	/**
+	 * True while the setup is not done or skipped.
+	 */
+	public function needs_setup(): bool {
+		return ! $this->is_done() && current_user_can( 'manage_woocommerce' );
+	}
+
+	/**
+	 * Link that marks the setup as skipped. The person comes back to the page they were on.
+	 */
+	public static function skip_url(): string {
+		return wp_nonce_url( add_query_arg( 'obal_setup', 'skip', self::url() ), self::NONCE );
+	}
+
+	private function notice_dismissed(): bool {
+		$dismissed = explode( ',', (string) get_user_meta( get_current_user_id(), 'dismissed_wp_pointers', true ) );
+		return in_array( self::POINTER, $dismissed, true );
+	}
+
+	/**
+	 * Remembers the close button per user, through the core "dismiss pointer" request.
+	 */
+	public function dismiss_script(): void {
+		if ( ! $this->needs_setup() || $this->notice_dismissed() ) {
+			return;
+		}
+		wp_add_inline_script(
+			'common',
+			'jQuery(function($){$(document).on("click",".obal-setup-notice .notice-dismiss",function(){$.post(window.ajaxurl,{action:"dismiss-wp-pointer",pointer:' . wp_json_encode( self::POINTER ) . '});});});'
+		);
+	}
+
 	public function notice(): void {
-		if ( $this->is_done() || ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->needs_setup() || $this->notice_dismissed() ) {
 			return;
 		}
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
@@ -90,12 +127,12 @@ final class SetupWizard implements Module {
 			return;
 		}
 		printf(
-			'<div class="notice notice-info is-dismissible"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a> <a class="button" href="%5$s">%6$s</a></p></div>',
+			'<div class="notice notice-info is-dismissible obal-setup-notice"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a> <a class="button" href="%5$s">%6$s</a></p></div>',
 			esc_html__( 'Order Balance is installed.', 'modwell-order-balance-for-woocommerce' ),
 			esc_html__( 'Take two minutes to choose how payments, balances and emails work in your store.', 'modwell-order-balance-for-woocommerce' ),
 			esc_url( self::url() ),
 			esc_html__( 'Run the setup', 'modwell-order-balance-for-woocommerce' ),
-			esc_url( wp_nonce_url( add_query_arg( 'obal_setup', 'skip', self::url() ), self::NONCE ) ),
+			esc_url( self::skip_url() ),
 			esc_html__( 'Skip', 'modwell-order-balance-for-woocommerce' )
 		);
 	}
@@ -151,8 +188,6 @@ final class SetupWizard implements Module {
 				'type'  => 'ready',
 			),
 		);
-
-		$steps = (array) apply_filters( 'obal_setup_steps', $steps );
 
 		// Only sections with something to set count. Data handling stays in Settings only.
 		$all = array_keys(
@@ -222,7 +257,8 @@ final class SetupWizard implements Module {
 			if ( current_user_can( 'manage_woocommerce' ) ) {
 				update_option( self::DONE, 'skipped', false );
 			}
-			wp_safe_redirect( AdminPage::url( 'settings' ) );
+			$back = wp_get_referer();
+			wp_safe_redirect( $back && false === strpos( $back, self::PAGE ) ? $back : AdminPage::url( 'settings' ) );
 			exit;
 		}
 
@@ -249,8 +285,6 @@ final class SetupWizard implements Module {
 		} elseif ( 'emails' === $type ) {
 			$this->plugin->get( AdminPage::class )->save_emails( isset( $_POST['obal_email'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['obal_email'] ) ) : array() );
 		}
-
-		do_action( 'obal_setup_saved', $step, $this->plugin );
 
 		$next = $this->next_step( $step );
 		if ( 'ready' === $next || $next === $step ) {

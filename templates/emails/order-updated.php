@@ -63,7 +63,6 @@ if ( ! $obal_third_party ) {
 </table>
 
 <?php
-do_action( 'obal_email_after_summary', $order, $balance, $plain_text, $email );
 if ( ! $obal_third_party ) {
 	do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.
 }

@@ -61,7 +61,8 @@ final class OrderMetabox implements Module {
 				'threshold'   => $settings->threshold(),
 				'can_request' => $service->can_request( $order ),
 				'plan'        => $plan,
-				'show_update' => $service->offers_update( $order, $plan ),
+				'show_update' => (bool) $plan,
+				'setup'       => $this->plugin->get( SetupWizard::class )->needs_setup(),
 				'last_notice' => $service->last_notice( $order ),
 				'mode_label'  => isset( $modes[ $mode ] ) ? $modes[ $mode ] : '',
 			)

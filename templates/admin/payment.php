@@ -129,7 +129,6 @@ $obal_method = $payment->get_payment_method_title();
 											<button type="button" class="button button-small obal-copy" data-copy="<?php echo esc_url( $payment->get_checkout_payment_url() ); ?>"><?php esc_html_e( 'Copy link', 'modwell-order-balance-for-woocommerce' ); ?></button>
 										</p>
 									<?php endif; ?>
-									<?php do_action( 'obal_payment_details_rows', $payment ); ?>
 								</div>
 							</div>
 							<div class="clear"></div>
@@ -212,7 +211,6 @@ $obal_method = $payment->get_payment_method_title();
 								<td width="1%"></td>
 								<td class="total"><?php echo wp_kses_post( wc_price( $payment->get_balance_part(), $obal_currency ) ); ?></td>
 							</tr>
-							<?php do_action( 'obal_payment_totals_rows', $payment ); ?>
 							<?php if ( $payment->get_gateway_fees() > 0 ) : ?>
 								<tr>
 									<td class="label"><?php esc_html_e( 'Payment method fees:', 'modwell-order-balance-for-woocommerce' ); ?><br><small><?php echo esc_html( $payment->refunds_fees() ? __( 'refunded in proportion', 'modwell-order-balance-for-woocommerce' ) : __( 'not refundable', 'modwell-order-balance-for-woocommerce' ) ); ?></small></td>

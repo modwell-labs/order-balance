@@ -35,7 +35,6 @@ if ( ! $obal_third_party ) {
 echo "\n" . esc_html__( 'Paid so far', 'modwell-order-balance-for-woocommerce' ) . ': ' . esc_html( wp_strip_all_tags( wc_price( $balance->paid, $obal_currency ) ) ) . "\n";
 echo ( $balance->is_overpaid() ? esc_html__( 'To be refunded', 'modwell-order-balance-for-woocommerce' ) : esc_html__( 'Balance due', 'modwell-order-balance-for-woocommerce' ) ) . ': ' . esc_html( wp_strip_all_tags( wc_price( abs( $balance->due ), $obal_currency ) ) ) . "\n\n";
 
-do_action( 'obal_email_after_summary', $order, $balance, $plain_text, $email );
 if ( ! $obal_third_party ) {
 	do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text, $email ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce email hook.
 }
